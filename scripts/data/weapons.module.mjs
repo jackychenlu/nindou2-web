@@ -292,7 +292,7 @@ export function weaponSoundKey(weaponKey) {
 }
 
 export function weaponFrameSource(weapon, direction, kind, index) {
-  return `assets/weapon/${weapon.folder}/${direction}_${kind}/${index + 1}.png`;
+  return `assets/weapon/${weapon.folder}/${direction}_${kind}/${index + 1}.webp`;
 }
 
 export function weaponAttackScale(weaponKey) {
