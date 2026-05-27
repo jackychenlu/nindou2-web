@@ -1,0 +1,35 @@
+{
+  "name": "2-c-users-lane6-onedrive-desktop",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "dev": "node scripts/tools/ensure-classic-runtime-bundle.mjs --quiet && vite --host 127.0.0.1",
+    "serve:game": "node scripts/tools/serve-game.mjs",
+    "bundle:classic-runtime": "node scripts/tools/build-classic-runtime-bundle.mjs",
+    "build": "node scripts/tools/ensure-classic-runtime-bundle.mjs --quiet && vite build",
+    "preview": "node scripts/tools/ensure-classic-runtime-bundle.mjs --quiet && vite preview --host 127.0.0.1",
+    "verify:vite": "node scripts/tools/verify-vite-runtime.mjs",
+    "check": "node --check scripts/bootstrap/install-game-globals.module.mjs",
+    "sync:weapons": "node scripts/tools/sync-bridge.mjs --key weapons",
+    "sync:config-nindou": "node scripts/tools/sync-bridge.mjs --key config-nindou",
+    "sync:ninjutsu-definitions": "node scripts/tools/sync-bridge.mjs --key ninjutsu-definitions",
+    "sync:locales": "node scripts/tools/sync-bridge.mjs --key locales",
+    "sync:map": "node scripts/tools/sync-bridge.mjs --key map",
+    "sync:rule-modes": "node scripts/tools/sync-bridge.mjs --key rule-modes",
+    "sync:bridges": "node scripts/tools/sync-bridge.mjs --key all",
+    "sync:bridges:validate": "node scripts/tools/sync-bridge.mjs --validate",
+    "sync:bridges:list": "node scripts/tools/sync-bridge.mjs --list",
+    "sync:bridges:dry-run": "node scripts/tools/sync-bridge.mjs --key all --dry-run --json",
+    "test": "node --test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "playwright": "^1.59.1",
+    "vite": "^8.0.14"
+  },
+  "dependencies": {
+    "pngjs": "^7.0.0"
+  }
+}

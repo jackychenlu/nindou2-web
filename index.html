@@ -1,0 +1,357 @@
+﻿<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>忍豆風雲2單機版</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="room-mode">
+  <main class="app">
+    <section class="stage">
+      <section id="roomScreen" class="room-screen" aria-label="房間畫面">
+        <div class="room-frame">
+          <header class="room-topbar">
+            <select id="ruleModeSelect" class="room-rule-select" aria-label="忍2原版">
+              <option value="original" selected>忍2原版</option>
+              <option value="modified">忍2修改</option>
+            </select>
+            <div class="room-title-cell">
+              <span>模式</span>
+              <select id="deathModeSelect" class="room-title-select" aria-label="絕命回血">
+                <option value="death_command">絕命指令</option>
+                <option value="death_heal" selected>絕命回血</option>
+              </select>
+            </div>
+            <button type="button" class="room-leave-btn" aria-label="離開"></button>
+          </header>
+
+          <aside class="team-tabs" aria-label="隊伍">
+            <button id="teamEditBtn" type="button" class="room-text-button team-edit-btn" aria-label="編輯">編輯</button>
+            <button id="teamShopBtn" type="button" class="room-text-button team-shop-btn" aria-label="商店">商店</button>
+            <div class="team-tab team-tab-blue active">青組</div>
+            <div class="team-tab team-tab-grey">灰組</div>
+          </aside>
+
+          <div class="player-grid" aria-label="玩家卡片">
+            <article class="room-player-card host blue active-slot" data-team="blue" data-slot="1">
+              <button type="button" class="room-slot-remove" aria-label="刪除">×</button>
+              <button type="button" class="room-slot-add" aria-label="新增">新增</button>
+              <div class="room-name">青1</div>
+              <select class="room-look-select" data-team="blue" data-slot="1" aria-label="青組 1 外觀">
+                <option value="default" selected>預設外觀</option>
+                <option value="red">赤組</option>
+              </select>
+              <img class="room-avatar" src="assets/room/ui/b_team.png" alt="">
+              <img class="room-avatar-eye" src="assets/characters/parts/eyes-middle/11.png" alt="">
+              <span class="room-hp-label" aria-hidden="true">体</span>
+              <input class="room-hp-input" data-team="blue" data-slot="1" type="number" min="1" max="9999" step="1" value="300" aria-label="青組 1 血量">
+              <span class="room-skill-label" aria-hidden="true">技</span>
+              <input class="room-skill-input" data-team="blue" data-slot="1" type="number" min="0" max="9999" step="1" value="18" aria-label="青組 1 技量">
+              <select class="room-control-select" data-team="blue" data-slot="1" aria-label="青組 1 控制">
+                <option value="player" selected>玩家</option>
+                <option value="ai_beginner">初心者</option>
+                <option value="ai_red">赤組</option>
+                <option value="ai_tachi_master">太刀達人</option>
+                <option value="ai_money_dart_master">錢鏢神人</option>
+                <option value="ai_dart_only_master">尬鏢神人</option>
+                <option value="ai_god">神人</option>
+              </select>
+              <select class="room-weapon-select" data-team="blue" data-slot="1" aria-label="青組 1 武器">
+                <option value="weapon1" selected>苦無</option>
+                <option value="weapon3">忍太刀</option>
+                <option value="weapon4">伊賀密刀</option>
+                <option value="weapon6">鐵扇不知火</option>
+                <option value="weapon8">伊賀溜溜球</option>
+              </select>
+            </article>
+            <article class="room-player-card blue" data-team="blue" data-slot="2">
+              <button type="button" class="room-slot-remove" aria-label="刪除">×</button>
+              <button type="button" class="room-slot-add" aria-label="新增">新增</button>
+              <div class="room-name">青2</div>
+              <select class="room-look-select" data-team="blue" data-slot="2" aria-label="青組 2 外觀"></select>
+              <img class="room-avatar" src="assets/room/ui/b_team.png" alt="">
+              <img class="room-avatar-eye" src="assets/characters/parts/eyes-middle/11.png" alt="">
+              <span class="room-hp-label" aria-hidden="true">体</span>
+              <input class="room-hp-input" data-team="blue" data-slot="2" type="number" min="1" max="9999" step="1" value="300" aria-label="青組 2 血量">
+              <span class="room-skill-label" aria-hidden="true">技</span>
+              <input class="room-skill-input" data-team="blue" data-slot="2" type="number" min="0" max="9999" step="1" value="18" aria-label="青組 2 技量">
+              <select class="room-control-select" data-team="blue" data-slot="2" aria-label="青組 2 控制"></select>
+              <select class="room-weapon-select" data-team="blue" data-slot="2" aria-label="青組 2 武器"></select>
+            </article>
+            <article class="room-player-card blue" data-team="blue" data-slot="3">
+              <button type="button" class="room-slot-remove" aria-label="刪除">×</button>
+              <button type="button" class="room-slot-add" aria-label="新增">新增</button>
+              <div class="room-name">青3</div>
+              <select class="room-look-select" data-team="blue" data-slot="3" aria-label="青組 3 外觀"></select>
+              <img class="room-avatar" src="assets/room/ui/b_team.png" alt="">
+              <img class="room-avatar-eye" src="assets/characters/parts/eyes-middle/11.png" alt="">
+              <span class="room-hp-label" aria-hidden="true">体</span>
+              <input class="room-hp-input" data-team="blue" data-slot="3" type="number" min="1" max="9999" step="1" value="300" aria-label="青組 3 血量">
+              <span class="room-skill-label" aria-hidden="true">技</span>
+              <input class="room-skill-input" data-team="blue" data-slot="3" type="number" min="0" max="9999" step="1" value="18" aria-label="青組 3 技量">
+              <select class="room-control-select" data-team="blue" data-slot="3" aria-label="青組 3 控制"></select>
+              <select class="room-weapon-select" data-team="blue" data-slot="3" aria-label="青組 3 武器"></select>
+            </article>
+            <article class="room-player-card blue" data-team="blue" data-slot="4">
+              <button type="button" class="room-slot-remove" aria-label="刪除">×</button>
+              <button type="button" class="room-slot-add" aria-label="新增">新增</button>
+              <div class="room-name">青4</div>
+              <select class="room-look-select" data-team="blue" data-slot="4" aria-label="青組 4 外觀"></select>
+              <img class="room-avatar" src="assets/room/ui/b_team.png" alt="">
+              <img class="room-avatar-eye" src="assets/characters/parts/eyes-middle/11.png" alt="">
+              <span class="room-hp-label" aria-hidden="true">体</span>
+              <input class="room-hp-input" data-team="blue" data-slot="4" type="number" min="1" max="9999" step="1" value="300" aria-label="青組 4 血量">
+              <span class="room-skill-label" aria-hidden="true">技</span>
+              <input class="room-skill-input" data-team="blue" data-slot="4" type="number" min="0" max="9999" step="1" value="18" aria-label="青組 4 技量">
+              <select class="room-control-select" data-team="blue" data-slot="4" aria-label="青組 4 控制"></select>
+              <select class="room-weapon-select" data-team="blue" data-slot="4" aria-label="青組 4 武器"></select>
+            </article>
+            <article class="room-player-card grey active-slot" data-team="grey" data-slot="1">
+              <button type="button" class="room-slot-remove" aria-label="刪除">×</button>
+              <button type="button" class="room-slot-add" aria-label="新增">新增</button>
+              <div class="room-name">灰1</div>
+              <select class="room-look-select" data-team="grey" data-slot="1" aria-label="灰組 1 外觀"></select>
+              <img class="room-avatar" src="assets/room/ui/g_team.png" alt="">
+              <img class="room-avatar-eye" src="assets/characters/parts/eyes-middle/11.png" alt="">
+              <span class="room-hp-label" aria-hidden="true">体</span>
+              <input class="room-hp-input" data-team="grey" data-slot="1" type="number" min="1" max="9999" step="1" value="300" aria-label="灰組 1 血量">
+              <span class="room-skill-label" aria-hidden="true">技</span>
+              <input class="room-skill-input" data-team="grey" data-slot="1" type="number" min="0" max="9999" step="1" value="18" aria-label="灰組 1 技量">
+              <select class="room-control-select" data-team="grey" data-slot="1" aria-label="灰組 1 控制"></select>
+              <select class="room-weapon-select" data-team="grey" data-slot="1" aria-label="灰組 1 武器"></select>
+            </article>
+            <article class="room-player-card grey" data-team="grey" data-slot="2">
+              <button type="button" class="room-slot-remove" aria-label="刪除">×</button>
+              <button type="button" class="room-slot-add" aria-label="新增">新增</button>
+              <div class="room-name">灰2</div>
+              <select class="room-look-select" data-team="grey" data-slot="2" aria-label="灰組 2 外觀"></select>
+              <img class="room-avatar" src="assets/room/ui/g_team.png" alt="">
+              <img class="room-avatar-eye" src="assets/characters/parts/eyes-middle/11.png" alt="">
+              <span class="room-hp-label" aria-hidden="true">体</span>
+              <input class="room-hp-input" data-team="grey" data-slot="2" type="number" min="1" max="9999" step="1" value="300" aria-label="灰組 2 血量">
+              <span class="room-skill-label" aria-hidden="true">技</span>
+              <input class="room-skill-input" data-team="grey" data-slot="2" type="number" min="0" max="9999" step="1" value="18" aria-label="灰組 2 技量">
+              <select class="room-control-select" data-team="grey" data-slot="2" aria-label="灰組 2 控制"></select>
+              <select class="room-weapon-select" data-team="grey" data-slot="2" aria-label="灰組 2 武器"></select>
+            </article>
+            <article class="room-player-card grey" data-team="grey" data-slot="3">
+              <button type="button" class="room-slot-remove" aria-label="刪除">×</button>
+              <button type="button" class="room-slot-add" aria-label="新增">新增</button>
+              <div class="room-name">灰3</div>
+              <select class="room-look-select" data-team="grey" data-slot="3" aria-label="灰組 3 外觀"></select>
+              <img class="room-avatar" src="assets/room/ui/g_team.png" alt="">
+              <img class="room-avatar-eye" src="assets/characters/parts/eyes-middle/11.png" alt="">
+              <span class="room-hp-label" aria-hidden="true">体</span>
+              <input class="room-hp-input" data-team="grey" data-slot="3" type="number" min="1" max="9999" step="1" value="300" aria-label="灰組 3 血量">
+              <span class="room-skill-label" aria-hidden="true">技</span>
+              <input class="room-skill-input" data-team="grey" data-slot="3" type="number" min="0" max="9999" step="1" value="18" aria-label="灰組 3 技量">
+              <select class="room-control-select" data-team="grey" data-slot="3" aria-label="灰組 3 控制"></select>
+              <select class="room-weapon-select" data-team="grey" data-slot="3" aria-label="灰組 3 武器"></select>
+            </article>
+            <article class="room-player-card grey" data-team="grey" data-slot="4">
+              <button type="button" class="room-slot-remove" aria-label="刪除">×</button>
+              <button type="button" class="room-slot-add" aria-label="新增">新增</button>
+              <div class="room-name">灰4</div>
+              <select class="room-look-select" data-team="grey" data-slot="4" aria-label="灰組 4 外觀"></select>
+              <img class="room-avatar" src="assets/room/ui/g_team.png" alt="">
+              <img class="room-avatar-eye" src="assets/characters/parts/eyes-middle/11.png" alt="">
+              <span class="room-hp-label" aria-hidden="true">体</span>
+              <input class="room-hp-input" data-team="grey" data-slot="4" type="number" min="1" max="9999" step="1" value="300" aria-label="灰組 4 血量">
+              <span class="room-skill-label" aria-hidden="true">技</span>
+              <input class="room-skill-input" data-team="grey" data-slot="4" type="number" min="0" max="9999" step="1" value="18" aria-label="灰組 4 技量">
+              <select class="room-control-select" data-team="grey" data-slot="4" aria-label="灰組 4 控制"></select>
+              <select class="room-weapon-select" data-team="grey" data-slot="4" aria-label="灰組 4 武器"></select>
+            </article>
+          </div>
+
+          <button id="battleStartBtn" type="button" class="battle-start-btn" aria-label="戰鬥開始">
+            <img src="assets/room/ui/start_button.png" alt="戰鬥開始">
+          </button>
+          <select id="roomMapSelect" class="room-map-select" aria-label="地圖">
+            <option value="evil-castle-1" selected>極惡城之一</option>
+            <option value="country-10">鄉野之十</option>
+          </select>
+
+          <section class="chat-panel" aria-label="聊天">
+            <div class="chat-log">
+            </div>
+            <div class="chat-input"><span>一般</span><strong></strong><button type="button">送</button></div>
+          </section>
+
+          <section class="mode-panel" aria-label="模式">
+            <div class="mode-title">隨機忍二系列</div>
+            <div class="mode-preview">?</div>
+            <button type="button" class="mode-side side-a">編輯設定</button>
+            <button type="button" class="mode-side side-b">遊戲設定</button>
+          </section>
+
+          <section class="room-volume-panel" aria-label="音量">
+            <label class="room-volume-control">
+              <input id="musicVolume" type="range" min="0" max="100" value="20" orient="vertical"> <!-- value預設音量 bgm -->
+              <span>音樂</span>
+            </label>
+            <label class="room-volume-control">
+              <input id="sfxVolume" type="range" min="0" max="100" value="20" orient="vertical">
+              <span>音效</span>
+            </label>
+          </section>
+
+          <section id="roomShop" class="room-shop" aria-label="商店" hidden>
+            <div class="room-shop-window">
+              <header class="room-shop-header">
+                <h2>商品一覽</h2>
+                <div class="room-shop-money">
+                  <span>2754073</span>
+                  <img src="assets/consumables/money_1.png" alt="兩">
+                  <button id="roomShopClose" class="room-shop-close" type="button" aria-label="關閉">×</button>
+                </div>
+              </header>
+              <div class="room-shop-body">
+                <div class="room-shop-list">
+                  <article class="room-shop-item" data-shop-item="backup3">
+                    <img src="assets/consumables/3.png" alt="">
+                    <div class="room-shop-item-main">
+                      <strong>神水</strong>
+                      <span>0兩</span>
+                    </div>
+                    <p>補滿技。</p>
+                  </article>
+                  <article class="room-shop-item" data-shop-item="sake4">
+                    <img src="assets/consumables/4.png" alt="">
+                    <div class="room-shop-item-main">
+                      <strong>神酒</strong>
+                      <span>0兩</span>
+                    </div>
+                    <p>補滿技，15秒內移動不消耗技。</p>
+                  </article>
+                  <article class="room-shop-item" data-shop-item="item1">
+                    <img src="assets/consumables/1.png" alt="">
+                    <div class="room-shop-item-main">
+                      <strong>備用道具</strong>
+                      <span>0兩</span>
+                    </div>
+                    <p>效果待接入。</p>
+                  </article>
+                  <article class="room-shop-item" data-shop-item="item2">
+                    <img src="assets/consumables/2.png" alt="">
+                    <div class="room-shop-item-main">
+                      <strong>備用道具</strong>
+                      <span>0兩</span>
+                    </div>
+                    <p>效果待接入。</p>
+                  </article>
+                  <article class="room-shop-item" data-shop-item="item5">
+                    <img src="assets/consumables/5.png" alt="">
+                    <div class="room-shop-item-main">
+                      <strong>備用道具</strong>
+                      <span>0兩</span>
+                    </div>
+                    <p>效果待接入。</p>
+                  </article>
+                  <article class="room-shop-item" data-shop-item="item6">
+                    <img src="assets/consumables/6.png" alt="">
+                    <div class="room-shop-item-main">
+                      <strong>備用道具</strong>
+                      <span>0兩</span>
+                    </div>
+                    <p>效果待接入。</p>
+                  </article>
+                  <article class="room-shop-item" data-shop-item="item7">
+                    <img src="assets/consumables/7.png" alt="">
+                    <div class="room-shop-item-main">
+                      <strong>備用道具</strong>
+                      <span>0兩</span>
+                    </div>
+                    <p>效果待接入。</p>
+                  </article>
+                  <article class="room-shop-item" data-shop-item="item8">
+                    <img src="assets/consumables/8.png" alt="">
+                    <div class="room-shop-item-main">
+                      <strong>備用道具</strong>
+                      <span>0兩</span>
+                    </div>
+                    <p>效果待接入。</p>
+                  </article>
+                </div>
+                <aside class="room-shop-bag" aria-label="道具欄">
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                </aside>
+              </div>
+              <footer class="room-shop-footer">
+                <div><span>總金額:</span><strong>0</strong><img src="assets/consumables/money_1.png" alt="兩"></div>
+              </footer>
+            </div>
+          </section>
+
+          <section id="ninjuEditor" class="room-ninju-editor" aria-label="忍術編輯" hidden>
+            <div class="ninju-editor-profile">
+              <img class="ninju-editor-avatar" src="assets/room/ui/b_team.png" alt="">
+              <div class="ninju-editor-stats">
+                <div><span>暱稱</span><strong>玩家</strong><button type="button">更改</button></div>
+                <div><span>段數</span><strong>99</strong><span>職業</span><strong>夜遊神</strong></div>
+                <div><span>所屬公會</span><strong>管理團隊</strong></div>
+              </div>
+              <div class="ninju-editor-score">
+                <div><span>勝績</span><strong>15</strong><span>敗績</span><strong>19</strong></div>
+                <div><span>金</span><strong>2754073</strong></div>
+                <div><span>德</span><strong>2152363</strong></div>
+              </div>
+              <div class="ninju-editor-mark">忍</div>
+            </div>
+
+            <div class="ninju-editor-board">
+              <nav class="ninju-editor-tabs" aria-label="編輯分類">
+                <button class="active" type="button">忍術</button>
+                <button type="button">武器</button>
+                <button type="button">眼睛</button>
+                <button type="button">道具</button>
+                <button type="button">外觀</button>
+              </nav>
+              <div class="ninju-editor-series" aria-label="忍術系別">
+                <span class="heal">回復系</span>
+                <span class="support">輔助系</span>
+                <span class="attack">攻擊系</span>
+                <span class="special">特殊系</span>
+                <span class="transform">變身系</span>
+              </div>
+              <div class="ninju-editor-panel">
+                <div class="ninju-editor-title">
+                  <span>請從已習得的忍術中挑選六個以便在戰鬥中使用</span>
+                  <button type="button">忍術介紹</button>
+                </div>
+                <div class="ninju-editor-slot-row">
+                  <div id="ninjuEditorSlots" class="ninju-editor-slots" aria-label="已選忍術"></div>
+                  <button id="ninjuEditorReset" class="ninju-editor-reset" type="button">重來</button>
+                </div>
+                <div id="ninjuEditorList" class="ninju-editor-list" aria-label="可選忍術"></div>
+              </div>
+              <div class="ninju-editor-actions">
+                <button id="ninjuEditorCancel" type="button">取消</button>
+                <button id="ninjuEditorSave" type="button">儲存</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+      <canvas id="game" width="960" height="680" aria-label="忍豆風雲2單機版戰鬥畫面"></canvas>
+      <div class="hud">
+        <div id="unitInfo" class="unit-info"></div>
+        <div class="meter" aria-hidden="true"><i id="skillFill"></i></div>
+        <button id="resetBtn" type="button" aria-label="重置">重置</button>
+      </div>
+      <p id="status" class="sr-only">準備完成</p>
+    </section>
+  </main>
+  <script type="module" src="scripts/main.module.js"></script>
+</body>
+</html>
