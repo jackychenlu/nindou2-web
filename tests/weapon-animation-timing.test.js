@@ -44,7 +44,7 @@ test("武器素材路徑與音效 key 由武器資料層提供", () => {
   const context = loadCombatRules();
   const weapon = context.weaponDefinitionForKey("weapon7");
 
-  assert.equal(context.weaponFrameSource(weapon, "right", "attack", 0), `assets/weapon/${weapon.folder}/right_attack/1.png`);
+  assert.equal(context.weaponFrameSource(weapon, "right", "attack", 0), `assets/weapon/${weapon.folder}/right_attack/1.webp`);
   assert.equal(context.weaponSoundKey("weapon7"), "slash7");
   assert.equal(context.slashSoundKeyForWeapon("weapon7"), "slash7");
 });

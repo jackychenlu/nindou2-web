@@ -7,14 +7,18 @@
 const defaultWeaponKey = "weapon1";
 const weaponDefinitions = [
   { key: "weapon1", label: "苦無", folder: "1苦無", frameCount: 12, cooldownMs: 500, area: "single", damage: 50 },
+  { key: "weapon2", label: "貓手", folder: "2貓手", frameCount: 6, cooldownMs: 255, area: "single", damage: 25 },
   { key: "weapon3", label: "忍太刀", folder: "3忍太刀", frameCount: 24, cooldownMs: 1000, area: "nodachi", damage: 50 },
   { key: "weapon4", label: "伊賀密刀", folder: "4伊賀密刀", frameCount: 13, cooldownMs: 500, area: "line2", damage: 50 },
+  { key: "weapon5", label: "修羅爪", folder: "5修羅爪", frameCount: 6, cooldownMs: 255, area: "single", damage: 50 },
   { key: "weapon6", label: "鐵扇不知火", folder: "6鐵扇不知火", frameCount: 9, cooldownMs: 300, area: "fan", damage: 25 },
   { key: "weapon7", label: "極冰鬼切丸", folder: "7極冰鬼切丸", frameCount: 22, cooldownMs: 1000, area: "line2", damage: 100 },
   { key: "weapon8", label: "伊賀溜溜球", folder: "8伊賀溜溜球", frameCount: 13, cooldownMs: 500, area: "ring8", damage: 20 },
+  { key: "weapon9", label: "抓癢不求人", folder: "9抓癢不求人", frameCount: 11, cooldownMs: 470, area: "nodachi", damage: 25 },
   { key: "weapon10", label: "風魔手裏劍", folder: "10風魔手裏劍", frameCount: 13, cooldownMs: 500, area: "line6", damage: 25 },
   { key: "weapon19", label: "妖刀村正", folder: "19妖刀村正", frameCount: 13, cooldownMs: 500, area: "surround", damage: 80 },
   { key: "weapon20", label: "鐵扇青海波", folder: "20鐵扇青海波", frameCount: 10, cooldownMs: 300, area: "wide331", damage: 60 },
+  { key: "weapon43", label: "鐵扇不知火EX", folder: "43鐵扇不知火EX", frameCount: 9, cooldownMs: 380, area: "fan", damage: 25 },
   { key: "weapon44", label: "滅魂之劍", folder: "44滅魂之劍", frameCount: 6, cooldownMs: 260, area: "NinjaS", damage: 25 },
   { key: "weapon106", label: "光劍", folder: "106光劍", frameCount: 8, cooldownMs: 330, area: "NinjaS", damage: 30 },
 ];
@@ -38,10 +42,27 @@ const weaponVisualProfiles = {
       down: (w) => ({ x: -w / 2, y: 50 }),
     },
   },
+weapon2: {
+    soundKey: "slash2",
+    attackScale: 0.8,
+    handScale: 0.8,
+    attackOffset: {
+      right: (w, h) => ({ x: -20, y: 30 }),
+      left: (w, h) => ({ x: -35, y: 30 }),
+      up: (w, h) => ({ x: -30, y: 50 }),
+      down: (w) => ({ x: -30, y: 20 }),
+    },
+    handOffset: {
+      right: (w, h) => ({ x: -60, y: 20 }),
+      left: (w, h) => ({ x: 20, y: 20 }),
+      up: (w, h) => ({ x: -30, y: 20 }),
+      down: (w) => ({ x: -30, y: 40 }),
+	},
+  },
   weapon3: {
     soundKey: "slash3",
-    attackScale: 1.0,
-    handScale: 1.0,
+    attackScale: 1,
+    handScale: 1,
     attackOffset: {
       right: (w, h) => ({ x: -w + 75, y: h / 2 - 44 }),
       left: (w, h) => ({ x: -w + 125, y: h / 2 - 44 }),
@@ -70,6 +91,23 @@ const weaponVisualProfiles = {
       left: () => ({ x: -50, y: 60 }),
       up: (w) => ({ x: -w / 2, y: 85 }),
       down: (w) => ({ x: -w / 2 - 5, y: 80 }),
+    },
+  },
+  weapon5: {
+    soundKey: "slash5",
+    attackScale: 0.8,
+    handScale: 0.72,
+    attackOffset: {
+      right: (w, h) => ({ x: -20, y: h - 30 }),
+      left: (w, h) => ({ x: -w +20 , y: h - 30 }),
+      up: (w, h) => ({ x: -w / 2, y: h - 20 }),
+      down: (w) => ({ x: -w / 2, y: 20 }),
+    },
+    handOffset: {
+      right: () => ({ x: -70, y: 20 }),
+      left: (w) => ({ x: 70 - w, y: 20 }),
+      up: (w) => ({ x: -w / 2, y: 20 }),
+      down: (w) => ({ x: -w / 2, y: 50 }),
     },
   },
   weapon6: {
@@ -123,6 +161,23 @@ const weaponVisualProfiles = {
       down: (w) => ({ x: -w / 2 + 8, y: 93 }),
     },
   },
+  weapon9: {
+    soundKey: "slash9",
+    attackScale: 0.8,
+    handScale: 0.8,
+    attackOffset: {
+      right: (w, h) => ({ x: -30, y: 20 }),
+      left: (w, h) => ({ x: -25, y: 20 }),
+      up: (w, h) => ({ x: -w / 2, y: 25 }),
+      down: (w) => ({ x: -w / 2, y: 25 }),
+    },
+    handOffset: {
+      right: (w, h) => ({ x: -w + 30, y: h / 2 + 5 }),
+      left: (w, h) => ({ x: -w + 75, y: h / 2 + 5 }),
+      up: (w, h) => ({ x: -w / 2, y: h - 55 }),
+      down: (w) => ({ x: -w / 2, y: 72 }),
+    },
+  },
   weapon10: {
     soundKey: "slash10",
     attackScale: 0.8,
@@ -174,6 +229,23 @@ const weaponVisualProfiles = {
       down: (w) => ({ x: -w / 2, y: 72 }),
     },
   },
+  weapon43: {
+    soundKey: "slash6",
+    attackScale: 0.8,
+    handScale: 0.8,
+    attackOffset: {
+      right: (w, h) => ({ x: -w + 55, y: h / 2 }),
+      left: (w, h) => ({ x: -w + 200, y: h / 2 }),
+      up: (w, h) => ({ x: -w + 75, y: h - 175 }),
+      down: (w) => ({ x: -w + 100, y: 215 }),
+    },
+    handOffset: {
+      right: (w, h) => ({ x: -80, y: 90 }),
+      left: (w, h) => ({ x: 80 - w, y: 90 }),
+      up: (w, h) => ({ x: -w / 2 +10,  y: 60 }),
+      down: (w) => ({ x: -w / 2, y: 80 }),
+    },
+  },
   weapon44: {
     soundKey: "slash44",
     attackScale: 0.8,
@@ -223,7 +295,7 @@ function weaponSoundKey(weaponKey) {
 }
 
 function weaponFrameSource(weapon, direction, kind, index) {
-  return `assets/weapon/${weapon.folder}/${direction}_${kind}/${index + 1}.png`;
+  return `assets/weapon/${weapon.folder}/${direction}_${kind}/${index + 1}.webp`;
 }
 
 function weaponAttackScale(weaponKey) {
