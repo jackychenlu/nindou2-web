@@ -34,7 +34,7 @@ export function installMovementRendererGlobals(target = globalThis) {
       if (age < target.PREARRIVE_TOTAL) {
         const fi = Math.min(1, Math.floor(age / target.PREARRIVE_FRAME_MS));
         const frame = target.movePrearriveFrames[team]?.[dir]?.[fi];
-        if (frame) ctx.drawImage(frame, src.x - frame.width / 2, src.y - frame.height / 2);
+        if (frame) ctx.drawImage(frame, src.x - frame.width / 2, src.y - 41);
       }
 
       if (age < target.ARRIVE_TOTAL) {

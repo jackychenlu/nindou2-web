@@ -66,7 +66,7 @@ test("queued 神水 restores skill immediately without starting effect sound or 
   assert.equal(messages.at(-1), "青1 已排入神水。");
 });
 
-test("queued 神酒 restores skill and movement-free buff immediately without effect sound or stun", async () => {
+test("queued 神酒 applies movement-free buff immediately but defers skill restore to animation end", async () => {
   const modulePath = pathToFileURL(path.join(repoRoot, "scripts", "systems", "consumables.module.mjs")).href;
   const consumableModule = await import(modulePath);
   const sounds = [];
@@ -88,10 +88,10 @@ test("queued 神酒 restores skill and movement-free buff immediately without ef
     playSound: (key) => sounds.push(key),
   }), true);
 
-  assert.equal(unit.skill, 18);
+  assert.equal(unit.skill, 1); // 技量延遲到動畫結束才回滿
   assert.deepEqual(unit.consumableUse.queue, ["sake4"]);
   assert.deepEqual(sounds, ["clickItem"]);
-  assert.equal(unit.moveSkillFreeUntil, 16200);
+  assert.equal(unit.moveSkillFreeUntil, 16200); // 移動不耗技 buff 立即套用
   assert.equal(unit.buffAuraType, "sake4");
   assert.deepEqual(stateLike.consumableEffects, []);
 });

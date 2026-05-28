@@ -159,7 +159,6 @@ export function executeConsumableItem(stateLike, unit, type, now, queue = [], ch
     callbacks = pendingNinjutsu || {};
     pendingNinjutsu = [];
   }
-  restoreConsumableSkill(unit, callbacks);
   if (type === "sake4") {
     applySake4MoveSkillFree(unit, now, callbacks);
   }
@@ -176,8 +175,8 @@ export function executeConsumableItem(stateLike, unit, type, now, queue = [], ch
   };
   callbacks.playSound?.("spUp");
   callbacks.setMessage?.(type === "sake4"
-    ? `${unit.name} 使用神酒，技量已回滿，15 秒內移動不消耗技。`
-    : `${unit.name} 使用神水，技量已回滿。`);
+    ? `${unit.name} 使用神酒，15 秒內移動不消耗技。`
+    : `${unit.name} 使用神水。`);
 }
 
 export function requestConsumableUse(stateLike, unit, type, slotIndex = -1, callbacks = {}) {
@@ -193,7 +192,6 @@ export function requestConsumableUse(stateLike, unit, type, slotIndex = -1, call
   }
   callbacks.playSound?.("clickItem");
   const now = callbacks.now ?? 0;
-  restoreConsumableSkill(unit, callbacks);
   if (type === "sake4") applySake4MoveSkillFree(unit, now, callbacks);
   if (unit.consumableUse) {
     removeInventoryItem(unit, type, 1, slotIndex);
@@ -215,8 +213,10 @@ export function updateConsumables(stateLike, now, callbacks = {}) {
     if (!current) continue;
     if (current.phase === "active") {
       if (now - current.startedAt < current.duration) continue;
+      restoreConsumableSkill(unit, callbacks);
+      if (unit.id === callbacks.playerUnitId) setMessage(`${unit.name} 技量回滿。`);
       if (current.queue?.length) {
-        unit.consumableUse = { phase: "gap", startedAt: now, duration: callbacks.ninjuChainMaxGap ?? ninjuChainMaxGap, queue: current.queue, gapMoves: 0 };
+        unit.consumableUse = { phase: "gap", startedAt: now, duration: callbacks.ninjuChainMaxGap ?? ninjuChainMaxGap, queue: current.queue, gapMoves: 0, pendingNinjutsu: current.pendingNinjutsu };
         if (unit.id === callbacks.playerUnitId) setMessage(`${unit.name}：道具連用空檔中。`);
       } else {
         unit.consumableUse = null;

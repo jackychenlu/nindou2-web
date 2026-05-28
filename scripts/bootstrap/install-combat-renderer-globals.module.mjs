@@ -35,11 +35,13 @@ export function installCombatRendererGlobals(target = globalThis) {
         ctx.fillRect(center.x - width / 2, center.y - height / 2, width, height);
       }
 
-      if (object.breakable && object.hp < target.objectHp) {
-        ctx.fillStyle = "rgba(0,0,0,.45)";
-        ctx.fillRect(center.x - 16, center.y - height * 0.78, 32, 4);
-        ctx.fillStyle = "#ffd766";
-        ctx.fillRect(center.x - 16, center.y - height * 0.78, 32 * Math.max(0, object.hp / object.maxHp), 4);
+      if (object.hitFlash > 0) {
+        ctx.save();
+        ctx.globalAlpha = object.hitFlash * 0.75;
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(drawX - width / 2, drawY - height * anchorY, width, height);
+        ctx.restore();
+        object.hitFlash = Math.max(0, object.hitFlash - 0.08);
       }
     }
   };

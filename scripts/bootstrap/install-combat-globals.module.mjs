@@ -141,6 +141,7 @@ export function installCombatGlobals(target = globalThis) {
   const damageObject = (object, attacker) => {
     const damage = unitWeaponDamageRuntime(attacker);
     object.hp = Math.max(0, object.hp - damage);
+    object.hitFlash = 0.65;
     target.setMessage(`${attacker.name} 攻擊 ${object.type}，造成 ${damage} 傷害。`);
     if (object.hp <= 0) {
       object.alive = false;
