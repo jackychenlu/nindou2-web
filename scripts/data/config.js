@@ -106,8 +106,8 @@ const ninjutsuRuleProfiles = {
     "moneyDart": {
       "cost": 0,
       "damage": 100,
-      "readyMs": 250,
-      "postThrowNinjuLockMs": 250
+      "readyMs": 200,
+      "postThrowNinjuLockMs": 200
     },
     "steel": {
       "cost": 6,
