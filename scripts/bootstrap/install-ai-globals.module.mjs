@@ -224,7 +224,7 @@ export function installAiGlobals(target = globalThis) {
 	    continue;
 	  }
 
-	  if (unit.moveT < 1 || now < unit.aiNextThink) continue;
+	  if (unit.moveT < 1 || currentNow < unit.aiNextThink) continue;
 
 
       const dist = target.manhattan(unit, enemy);

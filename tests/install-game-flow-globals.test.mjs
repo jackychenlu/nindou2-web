@@ -27,6 +27,7 @@ test("installGameFlowGlobals wires room, map, rule, and restart helpers", () => 
     },
     roomMapDefinitions: { "country-10": {}, "evil-castle-1": {} },
     defaultRoomMapKey: "country-10",
+    areGameAssetsReady: () => true,
     buildMapObjects: () => [{ id: "map" }],
     updateRoomMapUi: () => calls.push("mapUi"),
     updateRuleModeUi: () => calls.push("ruleUi"),
@@ -61,4 +62,48 @@ test("installGameFlowGlobals wires room, map, rule, and restart helpers", () => 
   assert.equal(state.result, null);
   assert.equal(calls.includes("回到房間。"), true);
   target.stopRestartHold({ code: "KeyR" });
+});
+
+test("startBattleFromRoom waits for images before leaving the room", async () => {
+  let resolveAssets;
+  let ready = false;
+  const calls = [];
+  const state = {
+    inRoom: true,
+    roomMapKey: "country-10",
+  };
+  const target = {
+    NindouRuntimeState: { getState: () => state },
+    document: {
+      body: { classList: classListStub(calls) },
+      querySelector: (selector) => (selector === "#roomMapSelect" ? { value: "country-10" } : null),
+    },
+    roomMapDefinitions: { "country-10": {} },
+    defaultRoomMapKey: "country-10",
+    areGameAssetsReady: () => ready,
+    whenGameAssetsReady: () => new Promise((resolve) => {
+      resolveAssets = () => {
+        ready = true;
+        resolve(true);
+      };
+    }),
+    updateRoomMapUi: () => calls.push("mapUi"),
+    resetGame: () => calls.push("reset"),
+    syncBgm: () => calls.push("syncBgm"),
+    startBgm: () => calls.push("startBgm"),
+    startDrawLoop: () => calls.push("startDrawLoop"),
+  };
+
+  installGameFlowGlobals(target);
+
+  assert.equal(target.startBattleFromRoom(), false);
+  assert.equal(state.inRoom, true);
+  assert.equal(calls.includes("reset"), false);
+
+  resolveAssets();
+  await Promise.resolve();
+
+  assert.equal(state.inRoom, false);
+  assert.equal(calls.includes("reset"), true);
+  assert.equal(calls.includes("startDrawLoop"), true);
 });

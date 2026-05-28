@@ -16,6 +16,8 @@ import {
   startConsumableUseEffect,
   restoreConsumableSkill,
   applySake4MoveSkillFree,
+  applyMagicWaterBuff,
+  applyPendingConsumableEffect,
   executeConsumableItem as executeConsumableItemModule,
   requestConsumableUse as requestConsumableUseModule,
   updateConsumables as updateConsumablesModule,
@@ -35,6 +37,7 @@ function runtimeCallbacks(target) {
     now: runtimeNow(target),
     defaultConsumableDisableMs: target.defaultConsumableDisableMs,
     defaultConsumableInvincibleMs: target.defaultConsumableInvincibleMs,
+    ninjuChainGap: target.ninjuChainGap,
     ninjuChainMaxGap: target.ninjuChainMaxGap,
     ninjuFollowupMoveAllowance: target.ninjuFollowupMoveAllowance,
     sake4MoveSkillFreeMs: target.sake4MoveSkillFreeMs,
@@ -60,14 +63,15 @@ export function installConsumablesGlobals(target = globalThis) {
     startConsumableUseEffect(stateLike(), unit, now, type, runtimeCallbacks(target));
   const restoreConsumableSkillRuntime = (unit) => restoreConsumableSkill(unit, runtimeCallbacks(target));
   const applySake4MoveSkillFreeRuntime = (unit, now) => applySake4MoveSkillFree(unit, now, runtimeCallbacks(target));
+  const applyMagicWaterBuffRuntime = (unit, now) => applyMagicWaterBuff(unit, now, runtimeCallbacks(target));
+  const applyPendingConsumableEffectRuntime = (unit, effect, now) =>
+    applyPendingConsumableEffect(unit, effect, now, runtimeCallbacks(target));
   const executeConsumableItemRuntime = (unit, type, now, queue = [], chainMoves = target.ninjuFollowupMoveAllowance || 0, pendingNinjutsu = []) =>
     executeConsumableItemModule(stateLike(), unit, type, now, queue, chainMoves, pendingNinjutsu, runtimeCallbacks(target));
   const requestConsumableUseRuntime = (unit, type, slotIndex = -1) => {
     if (unit?.ninju && target.isStatusNinjuType?.(unit.ninju.type)) {
       if ((unit.items?.[type] || 0) <= 0) return false;
       target.playSound?.("clickItem");
-      restoreConsumableSkillRuntime(unit);
-      if (type === "sake4") applySake4MoveSkillFreeRuntime(unit, runtimeNow(target));
       removeInventoryItem(unit, type, 1, slotIndex);
       syncRoomInventoryFromPlayerUnitRuntime(unit);
       unit.ninju.pendingConsumables = [...(unit.ninju.pendingConsumables || []), type];
@@ -83,18 +87,30 @@ export function installConsumablesGlobals(target = globalThis) {
       if (!current) continue;
       if (current.phase !== "active" && current.phase !== "gap") continue;
       if (current.phase === "active" && now - current.startedAt >= current.duration && !current.queue?.length && current.pendingNinjutsu?.length) {
+        if (current.pendingEffect && !current.pendingEffect.applied && now >= current.pendingEffect.applyAt) {
+          applyPendingConsumableEffectRuntime(unit, current.pendingEffect, now);
+        }
         const [nextAction, ...remainingNinjutsu] = current.pendingNinjutsu;
+        const pendingConsumableEffects = current.pendingEffect && !current.pendingEffect.applied
+          ? [current.pendingEffect]
+          : [];
         unit.consumableUse = null;
-        target.startStatusNinjuActive?.(unit, nextAction, now, remainingNinjutsu);
+        target.startStatusNinjuActive?.(unit, nextAction, now, remainingNinjutsu, false, [], pendingConsumableEffects);
         if (target.canControlUnit?.(unit)) target.playSound?.("useNinju");
         continue;
       }
       if (current.phase === "gap" && (!current.queue?.length) && current.pendingNinjutsu?.length) {
         const movedInGap = (current.gapMoves || 0) > 0;
         if (!movedInGap && now - current.startedAt < current.duration) continue;
+        if (current.pendingEffect && !current.pendingEffect.applied && now >= current.pendingEffect.applyAt) {
+          applyPendingConsumableEffectRuntime(unit, current.pendingEffect, now);
+        }
         const [nextAction, ...remainingNinjutsu] = current.pendingNinjutsu;
+        const pendingConsumableEffects = current.pendingEffect && !current.pendingEffect.applied
+          ? [current.pendingEffect]
+          : [];
         unit.consumableUse = null;
-        target.startStatusNinjuActive?.(unit, nextAction, now, remainingNinjutsu);
+        target.startStatusNinjuActive?.(unit, nextAction, now, remainingNinjutsu, false, [], pendingConsumableEffects);
         if (target.canControlUnit?.(unit)) target.playSound?.("useNinju");
       }
     }
@@ -105,16 +121,19 @@ export function installConsumablesGlobals(target = globalThis) {
     }
     const callbacks = runtimeCallbacks(target);
     callbacks.startStatusNinjuActive = target.startStatusNinjuActive;
+    callbacks.startMoneyDart = target.startMoneyDart;
     callbacks.canControlUnit = target.canControlUnit;
     updateConsumablesModule(currentState, now, callbacks);
   };
   const useBackupItemRuntime = (slotIndex = -1) => requestConsumableUseRuntime(target.selectedUnit?.(), "backup3", slotIndex);
   const useSakeItemRuntime = (slotIndex = -1) => requestConsumableUseRuntime(target.selectedUnit?.(), "sake4", slotIndex);
+  const useMagicWaterItemRuntime = (slotIndex = -1) => requestConsumableUseRuntime(target.selectedUnit?.(), "magicWater", slotIndex);
   const useItemSlotRuntime = (index) => {
     const unit = target.selectedUnit?.();
     const itemType = unit?.itemSlots?.[index] || "";
     if (itemType === "backup3") return useBackupItemRuntime(index);
     if (itemType === "sake4") return useSakeItemRuntime(index);
+    if (itemType === "magicWater") return useMagicWaterItemRuntime(index);
     target.setMessage?.("該欄位沒有可用道具。");
     return false;
   };
@@ -137,11 +156,14 @@ export function installConsumablesGlobals(target = globalThis) {
     startConsumableUseEffect: startConsumableUseEffectRuntime,
     restoreConsumableSkill: restoreConsumableSkillRuntime,
     applySake4MoveSkillFree: applySake4MoveSkillFreeRuntime,
+    applyMagicWaterBuff: applyMagicWaterBuffRuntime,
+    applyPendingConsumableEffect: applyPendingConsumableEffectRuntime,
     executeConsumableItem: executeConsumableItemRuntime,
     requestConsumableUse: requestConsumableUseRuntime,
     updateConsumables: updateConsumablesRuntime,
     useBackupItem: useBackupItemRuntime,
     useSakeItem: useSakeItemRuntime,
+    useMagicWaterItem: useMagicWaterItemRuntime,
     useItemSlot: useItemSlotRuntime,
   });
 
@@ -157,6 +179,8 @@ export function installConsumablesGlobals(target = globalThis) {
     applyConsumableUseDefault: applyConsumableUseDefaultRuntime,
     restoreConsumableSkill: restoreConsumableSkillRuntime,
     applySake4MoveSkillFree: applySake4MoveSkillFreeRuntime,
+    applyMagicWaterBuff: applyMagicWaterBuffRuntime,
+    applyPendingConsumableEffect: applyPendingConsumableEffectRuntime,
     runConsumableHelperProbe() {
       return summarizeConsumableHelpers({ runConsumableHelperProbe: () => null }).moduleResult;
     },

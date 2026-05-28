@@ -1,4 +1,4 @@
-﻿// Module mirror for static asset paths. Runtime loading still lives in assets.js.
+// Module mirror for static asset paths. Runtime loading still lives in assets.js.
 export const defaultRoomBgmSrc = "assets/sounds/bgm/忍2大廳.mp3";
 export const defaultBattleBgmSrc = "assets/sounds/bgm/忍3鄉野.mp3";
 
@@ -70,6 +70,10 @@ export const soundSources = {
   getItem1: "assets/sounds/break_item/get_item.ogg",
   getItem2: "assets/sounds/break_item/get_item2.ogg",
   useItem: "assets/sounds/in_game/click_item.ogg",
+};
+
+export const soundVolumeMultipliers = {
+  shopMoveItem: 0.3,
 };
 
 export const aiLookDirections = ["right", "left", "up", "down"];
@@ -148,7 +152,20 @@ export const lookDefinitions = {
     spriteSet: "zhaohuo",
     moveSet: "zhaohuo",
     useNinjuSet: "zhaohuo",
-    moneyDartReadySet: "b",
+    moneyDartReadySet: "zhaohuo",
+    moneyDartShootSet: "zhaohuo",
+  },
+  xiahoulan: {
+    labelKey: "xiahoulanLookOption",
+    roomAvatarSrc: "assets/characters/ai/idle/夏侯蘭_idle/down.webp",
+    roomAvatarEyeSrc: null,
+    drawEyes: false,
+    eyeFrontImageKey: "eyesFront",
+    eyeSideImageKey: "eyeSide",
+    spriteSet: "xiahoulan",
+    moveSet: "xiahoulan",
+    useNinjuSet: "xiahoulan",
+    moneyDartReadySet: "zhaohuo",
     moneyDartShootSet: "zhaohuo",
   },
 };
@@ -187,6 +204,7 @@ export const imageSources = {
   blueUp: "assets/characters/idle/blue/up.webp",
   ...aiIdleImageSources("redBlue", "a1"),
   ...aiIdleImageSources("zhaohuo", "趙活"),
+  ...aiIdleImageSources("xiahoulan", "夏侯蘭"),
   greyDown: "assets/characters/idle/grey/down.webp",
   greyLeft: "assets/characters/idle/grey/left.webp",
   greyRight: "assets/characters/idle/grey/right.webp",
@@ -229,6 +247,7 @@ export const imageSources = {
   ninjuIcon6: "assets/consumables/6.webp",
   backup3Item: "assets/consumables/3.webp",
   sake4Item: "assets/consumables/4.webp",
+  magicWaterItem: "assets/consumables/10.webp",
   chargeOuter: "assets/characters/charge/outer_moving.webp",
   eyesFront: "assets/characters/parts/eyes-middle/11.webp",
   eyeSide: "assets/characters/parts/eyes-look-right/11.webp",
@@ -242,6 +261,8 @@ export const frameSourceCatalog = {
   regenHpSmall: Array.from({ length: 23 }, (_, index) => `assets/ninju/status/regen_hp_s/${String(index + 1).padStart(2, "0")}.webp`),
   regenHpLarge: Array.from({ length: 24 }, (_, index) => `assets/ninju/status/regen_hp_l/${String(index + 1).padStart(2, "0")}.webp`),
   consumableRegenSp: Array.from({ length: 16 }, (_, index) => `assets/consumables/regen_sp/${String(index + 1).padStart(2, "0")}.webp`),
+  consumableMagicWater: Array.from({ length: 40 }, (_, index) => `assets/consumables/magic_water/${index + 1}.webp`),
+  consumableMagicWaterEffect: Array.from({ length: 40 }, (_, index) => `assets/consumables/magic_water/effect__${index + 1}.webp`),
   smallThunderSummon: Array.from({ length: 25 }, (_, index) => `assets/ninju/status/summon/small_thunder/${String(index + 1).padStart(2, "0")}.webp`),
   smallThunderDamaged: Array.from({ length: 36 }, (_, index) => `assets/ninju/status/damaged/small_thunder/${index + 1}.webp`),
   smallFireSummon: Array.from({ length: 23 }, (_, index) => `assets/ninju/status/summon/small_fire/F/${String(index + 1).padStart(2, "0")}.webp`),
@@ -261,6 +282,7 @@ export const frameSourceCatalog = {
   cloneNinju: Array.from({ length: 40 }, (_, index) => `assets/characters/b_clone/${index + 1}.webp`),
   cloneRedNinju: Array.from({ length: 40 }, (_, index) => `assets/characters/ai/clone/a1_clone/${index + 1}.webp`),
   cloneGreyNinju: Array.from({ length: 40 }, (_, index) => `assets/characters/g_clone/${index + 1}.webp`),
+  cloneZhaohuoNinju: Array.from({ length: 40 }, (_, index) => `assets/characters/ai/clone/趙活_clone/${index + 1}.webp`),
   angelNinju: Array.from({ length: 43 }, (_, index) => `assets/ninju/special_exports/sprites/DefineSprite_1049_Angel/${index + 1}.webp`),
   mouryoNinju: Array.from({ length: 43 }, (_, index) => `assets/ninju/special_exports/sprites/DefineSprite_1067_Mouryou/${index + 1}.webp`),
   mouryoNinjuHit: Array.from({ length: 45 }, (_, index) => `assets/ninju/special_exports/sprites/DefineSprite_580_Dmg_Mouryou/${index + 1}.webp`),
@@ -312,6 +334,10 @@ export const movePrearriveFrameSources = {
     direction,
     Array.from({ length: 2 }, (_, index) => `assets/characters/move/blue/prearrive/${direction}/${index + 1}.webp`),
   ])),
+  xiahoulan: Object.fromEntries(moveDirections.map((direction) => [
+    direction,
+    Array.from({ length: 2 }, (_, index) => `assets/characters/move/blue/prearrive/${direction}/${index + 1}.webp`),
+  ])),
 };
 
 export const moveArriveFrameSources = {
@@ -325,6 +351,7 @@ export const moveArriveFrameSources = {
     Array.from({ length: 5 }, (_, index) => `assets/characters/move/grey/arrive/${direction}/${index + 1}.webp`),
   ])),
   zhaohuo: aiArriveFrameSources("趙活"),
+  xiahoulan: aiArriveFrameSources("夏侯蘭"),
 };
 
 export const useNinjuFrameSources = {
@@ -332,11 +359,13 @@ export const useNinjuFrameSources = {
   red: aiUseNinjuFrameSources("a1"),
   grey: Array.from({ length: 12 }, (_, index) => `assets/characters/use-ninju/grey/${index + 1}.webp`),
   zhaohuo: aiUseNinjuFrameSources("趙活"),
+  xiahoulan: aiUseNinjuFrameSources("夏侯蘭"),
 };
 
 export const moneyDartReadyFrameSources = {
   b: Array.from({ length: 4 }, (_, index) => `assets/characters/b_dart/${index + 1}.webp`),
   r: aiMoneyDartReadyFrameSources("a1"),
+  zhaohuo: aiMoneyDartReadyFrameSources("趙活"),
   g: Array.from({ length: 4 }, (_, index) => `assets/characters/g_dart/${index + 1}.webp`),
 };
 

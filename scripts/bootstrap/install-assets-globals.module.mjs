@@ -2,6 +2,7 @@ import {
   defaultRoomBgmSrc,
   defaultBattleBgmSrc,
   soundSources,
+  soundVolumeMultipliers,
   imageSources,
   lookDefinitions,
   baseTeamLookDefinitions,
@@ -56,7 +57,7 @@ export function installAssetGlobals(target = globalThis) {
   const sounds = Object.fromEntries(Object.entries(soundSources).map(([key, src]) => {
     const audio = new Audio(src);
     audio.preload = "auto";
-    audio.volume = 0.2;
+    audio.volume = 0.2 * (soundVolumeMultipliers[key] ?? 1);
     return [key, audio];
   }));
 
@@ -65,6 +66,8 @@ export function installAssetGlobals(target = globalThis) {
   const regenHpSmallFrameSources = frameSourceCatalog.regenHpSmall;
   const regenHpLargeFrameSources = frameSourceCatalog.regenHpLarge;
   const consumableRegenSpFrameSources = frameSourceCatalog.consumableRegenSp;
+  const consumableMagicWaterFrameSources = frameSourceCatalog.consumableMagicWater;
+  const consumableMagicWaterEffectFrameSources = frameSourceCatalog.consumableMagicWaterEffect;
   const smallThunderSummonFrameSources = frameSourceCatalog.smallThunderSummon;
   const smallThunderDamagedFrameSources = frameSourceCatalog.smallThunderDamaged;
   const smallFireSummonFrameSources = frameSourceCatalog.smallFireSummon;
@@ -84,6 +87,7 @@ export function installAssetGlobals(target = globalThis) {
   const cloneNinjuFrameSources = frameSourceCatalog.cloneNinju;
   const cloneRedNinjuFrameSources = frameSourceCatalog.cloneRedNinju;
   const cloneGreyNinjuFrameSources = frameSourceCatalog.cloneGreyNinju;
+  const cloneZhaohuoNinjuFrameSources = frameSourceCatalog.cloneZhaohuoNinju;
   const angelNinjuFrameSources = frameSourceCatalog.angelNinju;
   const mouryoNinjuFrameSources = frameSourceCatalog.mouryoNinju;
   const mouryoNinjuHitFrameSources = frameSourceCatalog.mouryoNinjuHit;
@@ -97,6 +101,8 @@ export function installAssetGlobals(target = globalThis) {
   const regenHpSmallFrames = [];
   const regenHpLargeFrames = [];
   const consumableRegenSpFrames = [];
+  const consumableMagicWaterFrames = [];
+  const consumableMagicWaterEffectFrames = [];
   const smallThunderSummonFrames = [];
   const smallThunderDamagedFrames = [];
   const smallFireSummonFrames = [];
@@ -116,6 +122,7 @@ export function installAssetGlobals(target = globalThis) {
   const cloneNinjuFrames = [];
   const cloneRedNinjuFrames = [];
   const cloneGreyNinjuFrames = [];
+  const cloneZhaohuoNinjuFrames = [];
   const angelNinjuFrames = [];
   const mouryoNinjuFrames = [];
   const mouryoNinjuHitFrames = [];
@@ -188,7 +195,7 @@ export function installAssetGlobals(target = globalThis) {
       hitFrames: smallThunderDamagedFrames,
       castSound: "summonSmall",
       hitSound: "smallThunder",
-	  outcomes: attackNinjuOutcomeTables.flash,
+	  outcomes: target.attackNinjuOutcomeTables?.flash,
 	  castSize: 100, 
 	  castBox: { x: -50, y: -70, w: 100, h: 100 },
 	  damageDelayMs: 1500
@@ -207,7 +214,7 @@ export function installAssetGlobals(target = globalThis) {
 	    delay2: 1.0,
 	    volume2: 0.0
 	  },
-	  outcomes: attackNinjuOutcomeTables.wildfire,
+	  outcomes: target.attackNinjuOutcomeTables?.wildfire,
 	  castSize: 100, 
 	  castBox: { x: -50, y: -70, w: 100, h: 100 },
 	  damageDelayMs: 1500,
@@ -235,7 +242,7 @@ export function installAssetGlobals(target = globalThis) {
       holdHitLastFrame: true,
       breakEffect: "freezeBreak",
 	  hitBodyEffect: null,
-	  outcomes: attackNinjuOutcomeTables.freeze,
+	  outcomes: target.attackNinjuOutcomeTables?.freeze,
 	  castSize: 100, 
 	  castBox: { x: -62, y: -80, w: 125, h: 125 },
 	  damageDelayMs: 1500
@@ -268,6 +275,7 @@ export function installAssetGlobals(target = globalThis) {
     images,
     sounds,
     soundSources,
+    soundVolumeMultipliers,
     imageSources,
     lookDefinitions,
     baseTeamLookDefinitions,
@@ -276,6 +284,8 @@ export function installAssetGlobals(target = globalThis) {
     regenHpSmallFrameSources,
     regenHpLargeFrameSources,
     consumableRegenSpFrameSources,
+    consumableMagicWaterFrameSources,
+    consumableMagicWaterEffectFrameSources,
     smallThunderSummonFrameSources,
     smallThunderDamagedFrameSources,
     smallFireSummonFrameSources,
@@ -295,6 +305,7 @@ export function installAssetGlobals(target = globalThis) {
     cloneNinjuFrameSources,
     cloneRedNinjuFrameSources,
     cloneGreyNinjuFrameSources,
+    cloneZhaohuoNinjuFrameSources,
     angelNinjuFrameSources,
     mouryoNinjuFrameSources,
     mouryoNinjuHitFrameSources,
@@ -307,6 +318,8 @@ export function installAssetGlobals(target = globalThis) {
     regenHpSmallFrames,
     regenHpLargeFrames,
     consumableRegenSpFrames,
+    consumableMagicWaterFrames,
+    consumableMagicWaterEffectFrames,
     smallThunderSummonFrames,
     smallThunderDamagedFrames,
     smallFireSummonFrames,
@@ -326,6 +339,7 @@ export function installAssetGlobals(target = globalThis) {
     cloneNinjuFrames,
     cloneRedNinjuFrames,
     cloneGreyNinjuFrames,
+    cloneZhaohuoNinjuFrames,
     angelNinjuFrames,
     mouryoNinjuFrames,
     mouryoNinjuHitFrames,

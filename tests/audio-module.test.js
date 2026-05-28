@@ -2,8 +2,6 @@ const assert = require("node:assert/strict");
 const test = require("node:test");
 const { pathToFileURL } = require("node:url");
 const path = require("node:path");
-const { contextValue, createGameContext, loadScripts } = require("./helpers/script-loader");
-
 const repoRoot = path.resolve(__dirname, "..");
 
 function makeAudio(src) {
@@ -26,34 +24,18 @@ function makeAudio(src) {
     },
   };
 }
-
-function loadAudioContext() {
-  const context = createGameContext({
-    Audio: class {
-      constructor(src) {
-        return makeAudio(src);
-      }
-    },
-  });
-  return loadScripts(context, [
-    "scripts/data/config.js",
-    "scripts/data/weapons.js",
-    "scripts/data/assets.js",
-    "scripts/systems/grid.js",
-    "scripts/systems/audio.js",
-  ]);
-}
-
-test("audio ES module stays in sync with legacy audio helpers", async () => {
-  const context = loadAudioContext();
+test("audio ES module exposes current helper behavior", async () => {
   const modulePath = pathToFileURL(path.join(repoRoot, "scripts", "systems", "audio.module.mjs")).href;
   const audioModule = await import(modulePath);
-  const legacyAudio = contextValue(context, "globalThis.NindouAudio");
-  const summary = audioModule.summarizeAudioHelpers(legacyAudio);
+  const summary = audioModule.summarizeAudioHelpers();
 
-  assert.equal(summary.isSynced, true);
   assert.equal(audioModule.activeBgmKey({ stateLike: { inRoom: true } }), "room");
   assert.equal(audioModule.activeBgmKey({ stateLike: { result: { winner: "grey" } } }), null);
   assert.equal(audioModule.breakSoundKey({ type: "vase" }), "breakVase");
   assert.equal(audioModule.breakSoundKey({ type: "barrel" }), "breakDefault");
+  assert.equal(summary.moduleResult.playedVolume, 0.2);
+  assert.ok(Math.abs(summary.moduleResult.shopMoveItemVolume - 0.12) < 1e-9);
+  assert.ok(Math.abs(summary.moduleResult.quieterPlayedVolume - 0.14) < 1e-9);
+  assert.ok(Math.abs(audioModule.playSound({ breakVase: makeAudio("vase.ogg") }, "breakVase", { volumeMultiplier: 0.7 }).volume - 0.14) < 1e-9);
+  assert.ok(Math.abs(audioModule.playSound({ breakVase: makeAudio("vase.ogg") }, "breakVase", 0.7).volume - 0.14) < 1e-9);
 });

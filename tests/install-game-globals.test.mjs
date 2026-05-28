@@ -58,7 +58,6 @@ function makeTarget(overrides = {}) {
     drawGameHud: () => target.calls.push(["drawGameHud"]),
     drawNinjuBar: () => target.calls.push(["drawNinjuBar"]),
     drawFrame: () => target.calls.push(["drawFrame"]),
-    drawCountdownOverlay: (now) => target.calls.push(["drawCountdownOverlay", now]),
     drawResultOverlay: () => target.calls.push(["drawResultOverlay"]),
     updatePanel: () => target.calls.push(["updatePanel"]),
     ...overrides,
@@ -81,6 +80,18 @@ test("installGameGlobals wires DOM refs, runtime state, and compatibility object
   assert.equal(typeof target.NindouRuntimeState.getState, "function");
   assert.equal(target.NindouRuntimeState.getState(), target.state);
   assert.equal(target.NindouGame.state, target.state);
+  assert.deepEqual(target.state.roomItemSlots, [
+    "backup3",
+    "backup3",
+    "backup3",
+    "backup3",
+    "backup3",
+    "magicWater",
+    "magicWater",
+    "magicWater",
+    "magicWater",
+    "magicWater",
+  ]);
   assert.deepEqual(target.NindouRuntimeState.getSelectedNinjuLoadout(), ["heal1", null, null, null, null, null]);
 
   target.NindouRuntimeState.setSelectedNinjuLoadout(["fire1", null, null, null, null, null]);

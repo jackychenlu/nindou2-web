@@ -41,6 +41,13 @@ export function installGameFlowGlobals(target = globalThis) {
   const startBattleFromRoom = () => {
     const state = resolveRuntimeState(target);
     if (!state) return;
+    if (target.areGameAssetsReady?.() === false) {
+      target.whenGameAssetsReady?.().then(() => {
+        const nextState = resolveRuntimeState(target);
+        if (nextState?.inRoom) startBattleFromRoom();
+      });
+      return false;
+    }
     setRoomMap(roomMapSelectValue(target));
     state.inRoom = false;
     bodyClassList(target)?.remove("room-mode");
@@ -50,6 +57,7 @@ export function installGameFlowGlobals(target = globalThis) {
     target.startBgm();
     if (typeof target.startDrawLoop === "function") target.startDrawLoop();
     else target.draw?.();
+    return true;
   };
 
   const returnToRoom = () => {

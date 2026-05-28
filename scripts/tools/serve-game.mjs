@@ -21,6 +21,7 @@ const CONTENT_TYPES = {
   ".png": "image/png",
   ".svg": "image/svg+xml; charset=utf-8",
   ".wav": "audio/wav",
+  ".webp": "image/webp",
 };
 
 function argValue(name, fallback) {

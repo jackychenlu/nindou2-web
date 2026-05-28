@@ -155,15 +155,15 @@ test("all room cards can resolve and preview custom looks across teams", () => {
   const greyCard = roomCard("grey", 1);
   const target = baseTarget({
     lookDefinitions: {
-      default: { roomAvatarSrc: "blue.png", roomAvatarEyeSrc: "blue-eye.png", spriteSet: "blue" },
-      red: { roomAvatarSrc: "red.png", roomAvatarEyeSrc: "red-eye.png", spriteSet: "redBlue" },
-      zhaohuo: { roomAvatarSrc: "zhaohuo.png", roomAvatarEyeSrc: null, spriteSet: "zhaohuo" },
+      default: { roomAvatarSrc: "blue.webp", roomAvatarEyeSrc: "blue-eye.webp", spriteSet: "blue" },
+      red: { roomAvatarSrc: "red.webp", roomAvatarEyeSrc: "red-eye.webp", spriteSet: "redBlue" },
+      zhaohuo: { roomAvatarSrc: "zhaohuo.webp", roomAvatarEyeSrc: null, spriteSet: "zhaohuo" },
     },
     roomLocaleText: { defaultLookOption: "預設外觀", redLookOption: "赤組", zhaohuoLookOption: "趙活" },
     lookDefinitionByKey(key) { return this.lookDefinitions[key] || this.lookDefinitions.default; },
     baseLookDefinitionForTeam(team) {
       return team === "grey"
-        ? { roomAvatarSrc: "grey.png", roomAvatarEyeSrc: "grey-eye.png", spriteSet: "grey" }
+        ? { roomAvatarSrc: "grey.webp", roomAvatarEyeSrc: "grey-eye.webp", spriteSet: "grey" }
         : this.lookDefinitions.default;
     },
   });
@@ -179,10 +179,32 @@ test("all room cards can resolve and preview custom looks across teams", () => {
 
   target.updateRoomLookCard("blue", 1);
   target.updateRoomLookCard("grey", 1);
-  assert.equal(blueCard.avatar.src, "zhaohuo.png");
+  assert.equal(blueCard.avatar.src, "zhaohuo.webp");
   assert.equal(blueCard.eye.style.display, "none");
-  assert.equal(greyCard.avatar.src, "grey.png");
-  assert.equal(greyCard.eye.src, "grey-eye.png");
+  assert.equal(greyCard.avatar.src, "grey.webp");
+  assert.equal(greyCard.eye.src, "grey-eye.webp");
+});
+
+test("blue look select only keeps one default-look option", () => {
+  const blueLook = element({ value: "default", dataset: { team: "blue", slot: "1" } });
+  const greyLook = element({ value: "__team_default__", dataset: { team: "grey", slot: "1" } });
+  const target = baseTarget({
+    lookDefinitions: {
+      default: { label: "預設外觀", roomAvatarSrc: "blue.webp", roomAvatarEyeSrc: "blue-eye.webp" },
+      red: { label: "赤組", roomAvatarSrc: "red.webp", roomAvatarEyeSrc: "red-eye.webp" },
+    },
+    roomLocaleText: { defaultLookOption: "預設外觀" },
+  });
+  target.__allSelectors.set(".room-look-select", [blueLook, greyLook]);
+
+  installRoomUiGlobals(target);
+  target.setupLookSelects();
+
+  assert.equal((blueLook.innerHTML.match(/預設外觀/g) || []).length, 1);
+  assert.equal((greyLook.innerHTML.match(/預設外觀/g) || []).length, 1);
+  assert.equal(blueLook.innerHTML.includes('value="__team_default__"'), false);
+  assert.equal(greyLook.innerHTML.includes('value="__team_default__"'), true);
+  assert.equal(greyLook.innerHTML.includes('value="default"'), false);
 });
 
 test("ai red look stays forced even when a room card selects another appearance", () => {
@@ -191,11 +213,11 @@ test("ai red look stays forced even when a room card selects another appearance"
   const greyCard = roomCard("grey", 1);
   const target = baseTarget({
     lookDefinitions: {
-      default: { roomAvatarSrc: "blue.png", roomAvatarEyeSrc: "blue-eye.png" },
-      red: { roomAvatarSrc: "red.png", roomAvatarEyeSrc: "red-eye.png" },
+      default: { roomAvatarSrc: "blue.webp", roomAvatarEyeSrc: "blue-eye.webp" },
+      red: { roomAvatarSrc: "red.webp", roomAvatarEyeSrc: "red-eye.webp" },
     },
     lookDefinitionByKey(key) { return this.lookDefinitions[key] || this.lookDefinitions.default; },
-    baseLookDefinitionForTeam: () => ({ roomAvatarSrc: "grey.png", roomAvatarEyeSrc: "grey-eye.png" }),
+    baseLookDefinitionForTeam: () => ({ roomAvatarSrc: "grey.webp", roomAvatarEyeSrc: "grey-eye.webp" }),
   });
   target.__allSelectors.set(".room-control-select", [control]);
   target.__allSelectors.set(".room-look-select", [look]);
@@ -205,6 +227,43 @@ test("ai red look stays forced even when a room card selects another appearance"
   target.updateRoomLookCard("grey", 1);
 
   assert.equal(target.selectedLookKey("grey", 1), "red");
-  assert.equal(greyCard.avatar.src, "red.png");
-  assert.equal(greyCard.eye.src, "red-eye.png");
+  assert.equal(greyCard.avatar.src, "red.webp");
+  assert.equal(greyCard.eye.src, "red-eye.webp");
+});
+
+test("shop buy and remove consumables play the quiet shop sound", () => {
+  const sounds = [];
+  const messages = [];
+  const bagSlots = [element({ hidden: false }), element({ hidden: false })];
+  const state = { ruleModeKey: "original", deathModeKey: "death_heal", roomMapKey: "country-10", roomItemSlots: ["", ""] };
+  const target = baseTarget({
+    NindouRuntimeState: {
+      getState: () => state,
+      getSelectedNinjuLoadout: () => target.selected,
+      setSelectedNinjuLoadout: (value) => { target.selected = value; },
+      getEditNinjuDraft: () => target.draft,
+      setEditNinjuDraft: (value) => { target.draft = value; },
+      getEditNinjuSlotIndex: () => target.slotIndex,
+      setEditNinjuSlotIndex: (value) => { target.slotIndex = value; },
+    },
+    isImplementedConsumable: (type) => type === "backup3",
+    firstEmptyItemSlot: (slots) => slots.findIndex((slot) => !slot),
+    applyRoomInventoryToPlayerUnit: () => {},
+    notifyRoomInventoryChanged: () => {},
+    playSound: (key, options = {}) => sounds.push({ key, options }),
+    setMessage: (message) => messages.push(message),
+    itemLabel: () => "神水",
+  });
+  target.__allSelectors.set(".room-shop-bag > div", bagSlots);
+
+  installRoomUiGlobals(target);
+
+  target.purchaseShopItem({ dataset: { shopItem: "backup3" } });
+  target.removeRoomShopBagItem(0);
+
+  assert.deepEqual(sounds, [
+    { key: "shopMoveItem", options: {} },
+    { key: "shopMoveItem", options: {} },
+  ]);
+  assert.deepEqual(messages, ["購買神水。", "移除神水。"]);
 });

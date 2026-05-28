@@ -79,3 +79,64 @@ test("installAiGlobals installs updateAi side effects", () => {
   assert.equal(state.attacks.length, 1);
   assert.equal(grey.aiNextThink > 100000, true);
 });
+
+test("installAiGlobals keeps AI from acting before aiNextThink", () => {
+  const blue = { id: 1, team: "blue", controlMode: "player", x: 4, y: 4, hp: 300, alive: true };
+  const grey = {
+    id: 2,
+    team: "grey",
+    controlMode: "ai_beginner",
+    x: 5,
+    y: 4,
+    hp: 300,
+    skill: 18,
+    moveT: 1,
+    aiNextThink: 200000,
+    aiPlanKey: "1:4,4:5,4",
+    aiActionAt: 0,
+    alive: true,
+  };
+  const state = {
+    gameOver: false,
+    units: [blue, grey],
+    attacks: [],
+  };
+  const target = {
+    maxSkill: 18,
+    aiSkillRegenPerSecond: 0,
+    NindouRuntimeState: { getState: () => state },
+    canControlUnit: (unit) => unit.controlMode === "player",
+    isUnitCastingNinju: () => false,
+    isUnitDisabled: () => false,
+    isUnitInNinjuGap: () => false,
+    isUnitInvincible: () => false,
+    weaponIsReady: () => true,
+    manhattan: (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y),
+    attack: (unit, enemy) => {
+      enemy.hp -= 50;
+      state.attacks.push({ unit, enemy });
+    },
+    neighbors: () => [],
+    checkVictory: () => {},
+    steelRule: () => ({ cost: 3, castDurationMs: 100 }),
+    moneyDartRule: () => ({ cost: 2 }),
+    statusNinjuRule: () => ({ cost: 4, castDurationMs: 100 }),
+    isSteelDefenseActive: () => false,
+    isHotBloodActive: () => false,
+    isAttackNinjuType: () => false,
+    consumeAttackNinjuSoulLevel: () => 0,
+    playStatusNinjuSound: () => {},
+    playStatusEnergyUpSequence: () => {},
+    startHealNinjuCastEffects: () => {},
+    startMoneyDart: () => {},
+    throwMoneyDart: () => {},
+  };
+  installAiGlobals(target);
+
+  target.updateAi(0.016, 100000);
+
+  assert.equal(blue.hp, 300);
+  assert.equal(state.attacks.length, 0);
+  assert.equal(grey.x, 5);
+  assert.equal(grey.y, 4);
+});

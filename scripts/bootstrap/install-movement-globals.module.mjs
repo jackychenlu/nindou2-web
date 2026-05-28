@@ -185,6 +185,8 @@ export function installMovementGlobals(target = globalThis) {
     if (!freeMoveActive) {
       unit.skill -= cost;
       target.gainSoul(unit, cost);
+    } else {
+      target.gainSoul(unit, (cost * 2) / 5);
     }
     moveUnit(unit, cell.x, cell.y);
     if (path.hitEnemies.length > 0) {

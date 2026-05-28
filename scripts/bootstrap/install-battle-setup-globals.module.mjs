@@ -145,14 +145,15 @@ export function installBattleSetupGlobals(target = globalThis) {
     state.charging = false;
     state.gameOver = false;
     state.countdownStart = 0;
-    state.matchStart = currentNow;
+    state.matchStart = keepRoomState ? 0 : currentNow;
     state.matchEnd = 0;
     state.result = null;
     state.resultClickableAt = 0;
-    state.startSoundPlayed = true;
+    state.startSoundPlayed = keepRoomState;
     state.endSoundPlayed = false;
     state.endSoundInstance = null;
     state.inRoom = keepRoomState;
+    if (!keepRoomState) state.startSoundPlayed = true;
     target.setMessage("開始。");
     target.updatePanel();
   };

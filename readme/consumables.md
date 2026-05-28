@@ -6,9 +6,10 @@
 
 ## 1. 目前狀態
 
-- 目前 live code 有 2 種 consumable。
+- 目前 live code 有 3 種 consumable。
 - `backup3` 對應「神水」。
 - `sake4` 對應「神酒」。
+- `magicWater` 對應「魔水」。
 - 神水效果：補滿技
 - 神酒效果：補滿技，並在 15 秒內讓移動不消耗技。
 
@@ -18,12 +19,12 @@
 
 ### 神水圖示
 
-- 圖示檔：[`assets/consumables/3.png`](C:/Users/lane6/Documents/Codex/忍豆風雲2單機版/assets/consumables/3.png)
+- 圖示檔：[`assets/consumables/3.webp`](C:/Users/lane6/Documents/Codex/忍豆風雲2單機版/assets/consumables/3.webp)
 - 這份圖示目前應視為神水的主 icon。
 
 ### 神酒圖示
 
-- 圖示檔：[`assets/consumables/4.png`](C:/Users/lane6/Documents/Codex/忍豆風雲2單機版/assets/consumables/4.png)
+- 圖示檔：[`assets/consumables/4.webp`](C:/Users/lane6/Documents/Codex/忍豆風雲2單機版/assets/consumables/4.webp)
 - 這份圖示目前應視為神酒的主 icon。
 
 ### 道具使用音效
@@ -35,9 +36,10 @@
 ### 神水、神酒使用動畫
 
 - 動畫資料夾：[`assets/consumables/regen_sp`](C:/Users/lane6/Documents/Codex/忍豆風雲2單機版/assets/consumables/regen_sp)
-- 目前內容是 `01.png` 到 `16.png` 共 16 張序列。
+- 目前內容是 `01.webp` 到 `16.webp` 共 16 張序列。
 - 神水與神酒使用時會播放這組動畫，live code 以 `consumableRegenSpFrameSources` / `consumableRegenSpFrames` 載入，並由 `startConsumableUseEffect()` 建立 1.5 秒效果。
-- 這組素材目前只指定給神水、神酒，不代表所有 consumable 的預設使用動畫。
+- 魔水使用時會同時播兩組 `assets/consumables/magic_water` 動畫：保留 `1.webp` 到 `40.webp`，並疊加 `effect__1.webp` 到 `effect__40.webp`。live code 以 `consumableMagicWaterFrameSources` / `consumableMagicWaterFrames` 與 `consumableMagicWaterEffectFrameSources` / `consumableMagicWaterEffectFrames` 載入。
+- `regen_sp` 不是所有 consumable 的預設使用動畫。
 
 ### 其他可見相關素材
 
@@ -58,14 +60,14 @@
   `items`、`itemSlots`、`gold`
 - HUD：[`scripts/bootstrap/install-hud-renderer-globals.module.mjs`](C:/Users/lane6/Documents/Codex/忍豆風雲2單機版/scripts/bootstrap/install-hud-renderer-globals.module.mjs)
   `drawInventoryHud()`、`drawInventoryItemHud()`、`itemIconByType()`
-- 道具流程：[`scripts/systems/consumables.js`](C:/Users/lane6/Documents/Codex/忍豆風雲2單機版/scripts/systems/consumables.js)
+- 道具流程：[`scripts/systems/consumables.module.mjs`](C:/Users/lane6/Documents/Codex/忍豆風雲2單機版/scripts/systems/consumables.module.mjs)
   `useItemSlot(index)`、`addInventoryItem()`、`removeInventoryItem()`、`updateConsumables()`、`requestConsumableUse()`、`executeConsumableItem()`
-- 掉落流程：`scripts/systems/combat.js -> damageObject()` 內呼叫 `scripts/systems/consumables.js -> maybeGrantMapItem(object, attacker)`
+- 掉落流程：`scripts/bootstrap/install-combat-globals.module.mjs -> damageObject()` 內呼叫由 `scripts/bootstrap/install-consumables-globals.module.mjs` 安裝的 `maybeGrantMapItem(object, attacker)`
 - 房間商店：`scripts/bootstrap/install-room-ui-globals.module.mjs -> purchaseShopItem(itemEl)` 會把已實作商品直接加入 `state.roomItemSlots`
-- 房間商店重畫：`scripts/systems/consumables.js -> notifyRoomInventoryChanged()` 只觸發 `state.onRoomInventoryChanged` hook；實際 DOM 重畫由 `scripts/bootstrap/install-room-ui-globals.module.mjs -> renderRoomShopBag()` 負責。
-- 使用動畫：`scripts/systems/consumables.js -> startConsumableUseEffect(unit, now)` 建立 `state.consumableEffects`，`scripts/bootstrap/install-effects-renderer-globals.module.mjs -> drawConsumableEffects(now)` 繪製 `regen_sp`
-- 神水目前實際效果函式：`scripts/systems/consumables.js -> useBackupItem()`
-- 神酒目前實際效果函式：`scripts/systems/consumables.js -> useSakeItem()`
+- 房間商店重畫：`scripts/systems/consumables.module.mjs -> notifyRoomInventoryChanged()` 只觸發 `state.onRoomInventoryChanged` hook；實際 DOM 重畫由 `scripts/bootstrap/install-room-ui-globals.module.mjs -> renderRoomShopBag()` 負責。
+- 使用動畫：`scripts/systems/consumables.module.mjs -> startConsumableUseEffect(stateLike, unit, now)` 建立 `state.consumableEffects`，`scripts/bootstrap/install-effects-renderer-globals.module.mjs -> drawConsumableEffects(now)` 繪製對應道具特效。
+- 神水目前實際效果入口：`scripts/bootstrap/install-consumables-globals.module.mjs -> useBackupItem()`
+- 神酒目前實際效果入口：`scripts/bootstrap/install-consumables-globals.module.mjs -> useSakeItem()`
 - 移動免耗判定：`scripts/systems/movement.js -> skillMove()`
 
 ---
@@ -80,7 +82,8 @@
 - `items[type]` 目前仍保留數量統計用途，但 UI 與使用邏輯以 `itemSlots` 的單格占用為主。
 - 房間商店購買會先存到 `state.roomItemSlots`，開戰重建角色時再套到玩家的 `itemSlots`，因此買到的道具會顯示在戰鬥 HUD 的道具欄。
 - 道具連點會像忍術連段一樣排入 `unit.consumableUse.queue`；每個道具實際觸發時各自僵直 `1.5` 秒，active 使用期間可中間移動 3 段，兩次觸發中間仍使用和忍術連段相同的 `ninjuChainMaxGap` 走路空檔。
-- 道具 active 階段可點忍術，但忍術會進 `unit.consumableUse.pendingNinjutsu`，必須等道具 1.5 秒動畫結束後才開始；反過來忍術中點道具會進 `unit.ninju.pendingConsumables`，等所有已排忍術動畫結束後才播道具動畫。
+- 道具 active 階段可點忍術，但忍術會進 `unit.consumableUse.pendingNinjutsu`，必須等道具 1.5 秒動作結束後才開始；忍術輸入會先扣技，等神水、神酒、魔水使用滿 1.5 秒時才補滿技，不等後面的忍術動畫跑完。道具的動畫、`click_item.ogg` 與 `sp_up.ogg` 仍在道具啟動時先觸發。
+- 反過來忍術中點道具會進 `unit.ninju.pendingConsumables`，等所有已排忍術動畫結束後才播道具動畫。
 
 ---
 
@@ -88,7 +91,7 @@
 
 - 商店沒有「購買」按鈕。
 - 點左側商品就是直接購買。
-- 目前只有 `backup3`（神水）與 `sake4`（神酒）是已實作商品。
+- 目前已實作商品有 `backup3`（神水）、`sake4`（神酒）與 `magicWater`（魔水）。
 - 未接入的備用商品維持可顯示，但點擊後不播音、不改道具欄、不產生效果。
 - 右側 10 格目前只顯示已買道具預覽；實際戰鬥顯示以玩家 `itemSlots` 為準。
 
@@ -104,7 +107,7 @@
 ### 目前效果
 
 - 神水目前效果以 live code 為準。
-- 現況是使用後把目前角色 `skill` 補到 `skillMax`。
+- 現況是使用動畫與音效先觸發，實際補技在使用滿 1.5 秒時套用；若接忍術，忍術會先扣技，時間到 1.5 秒才補滿。
 - 即使目前技量已滿，點擊神水仍會照常使用並消耗神水。
 - 神水使用後播放 `assets/consumables/regen_sp` 動畫。
 - 神水套用 consumable 預設：使用後僵直 `1.5` 秒，同時無敵 `1.5` 秒。
@@ -115,7 +118,7 @@
 
 ### 掉落
 
-- 目前可破壞地圖物件掉 consumable 時，會在神水與神酒之間隨機取 1 種。
+- 目前可破壞地圖物件掉 consumable 時，仍只會在神水與神酒之間隨機取 1 種；魔水目前已可在房間商店購買。
 
 ---
 
@@ -128,14 +131,25 @@
 
 ### 目前效果
 
-- 使用後立刻把目前角色 `skill` 補到 `skillMax`。
-- 使用後 15 秒內，移動不消耗技。
-- 使用後 15 秒內，角色會套用類似鋼鐵的角色輪廓罩光，但顏色是金黃色；live code 以 `buffAuraType: "sake4"` 搭配 `moveSkillFreeUntil` 控制顯示。
+- 使用動畫與音效先觸發，實際補技與神酒 BUFF 在使用滿 1.5 秒時套用；若接忍術，忍術會先扣技，時間到 1.5 秒才補滿並套用 BUFF。
+- 神酒 BUFF 生效後 15 秒內，移動不消耗技。
+- 使用後 15 秒內，角色會套用類似鋼鐵的角色輪廓罩光，但顏色是金黃色；點擊後等待道具 1.5 秒生效時顯示。live code 以 `buffAuraType: "sake4"`、`moveSkillFreeUntil`、`buffAuraVisibleAt` 控制顯示。
 - 神酒使用後播放 `assets/consumables/regen_sp` 動畫。
 - 使用一次消耗 1 格神酒。
 - 連點多個神酒或和神水混用時，後續道具會排隊，等前一個道具 1.5 秒僵直結束並經過可移動空檔後才觸發。
 - 神酒套用 consumable 預設：使用後僵直 `1.5` 秒，同時無敵 `1.5` 秒。
 - 神酒使用成功時播放共通 `click_item.ogg`，並額外播放專用 [`assets/sounds/ninja/status/sp_up.ogg`](C:/Users/lane6/Documents/Codex/忍豆風雲2單機版/assets/sounds/ninja/status/sp_up.ogg)。
+
+## 8. 魔水規格
+
+- 內部 key：`magicWater`
+- 使用者名稱：`魔水`
+- 圖示檔：[`assets/consumables/10.webp`](C:/Users/lane6/Documents/Codex/忍豆風雲2單機版/assets/consumables/10.webp)
+- 使用動畫：[`assets/consumables/magic_water`](C:/Users/lane6/Documents/Codex/忍豆風雲2單機版/assets/consumables/magic_water)，同時疊加 `1.webp` 到 `40.webp` 與 `effect__1.webp` 到 `effect__40.webp`。
+- 效果和神酒一樣：補滿技，並在 15 秒內讓移動不消耗技；實際補技與 BUFF 在使用滿 1.5 秒時套用，若接忍術，忍術會先扣技，時間到 1.5 秒才補滿並套用 BUFF。
+- 額外效果：同一個 15 秒期間內，攻擊與防禦都變為 2 倍；不會和熱血、鋼鐵疊乘，所以攻防倍率最多仍是 2 倍。外層紫色光圈會在點擊後等待道具 1.5 秒生效時顯示。live code 實作為 `magicWaterUntil` 生效時與熱血/鋼鐵取最大倍率。
+- 魔水使用後同樣套用 consumable 預設：使用後僵直 `1.5` 秒，同時無敵 `1.5` 秒。
+- 魔水使用成功時播放共通 `click_item.ogg`，並額外播放專用 [`assets/sounds/ninja/status/sp_up.ogg`](C:/Users/lane6/Documents/Codex/忍豆風雲2單機版/assets/sounds/ninja/status/sp_up.ogg)。
 
 ---
 

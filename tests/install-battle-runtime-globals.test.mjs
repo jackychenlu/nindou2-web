@@ -27,7 +27,6 @@ test("installBattleRuntimeGlobals wires match and charging helpers", () => {
     pointerIsOnUnit: () => true,
     maxSkill: 18,
     chargePerSecond: 2,
-    countdownTotalMs: 2500,
     setMessage: (message) => messages.push(message),
     playSound: (key) => sounds.push(key),
     attackNinjuConfigs: { flash: {} },
@@ -49,10 +48,8 @@ test("installBattleRuntimeGlobals wires match and charging helpers", () => {
   assert.equal(state.charging, true);
   assert.equal(state.pressedUnit.skill, 2);
   target.updateMatchState(1000);
-  assert.equal(state.matchStart, 0);
-  target.updateMatchState(3600);
-  assert.equal(state.matchStart, 3500);
-  assert.deepEqual(sounds.slice(0, 1), ["gameStarted"]);
+  assert.equal(state.matchStart, 1000);
+  assert.deepEqual(sounds, []);
   assert.equal(target.isMatchActive(), true);
   target.useNinjuByType("flash");
   target.useNinjuByType("clone");

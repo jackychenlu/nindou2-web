@@ -16,6 +16,7 @@ export function installUnitRendererGlobals(target = globalThis) {
   const steelOutlineCache = new WeakMap();
   const hotBloodOutlineCache = new WeakMap();
   const sake4OutlineCache = new WeakMap();
+  const magicWaterOutlineCache = new WeakMap();
 
   const unitSprite = (unit) => {
     const prefix = target.unitLookDefinition(unit).spriteSet || (unit.team === "blue" ? "blue" : "grey");
@@ -86,21 +87,28 @@ export function installUnitRendererGlobals(target = globalThis) {
     drawBuffSpriteOutline(sprite, p, bob, sake4OutlineCache, "#ffd94d", "#ffbf1f", 2, 9, drawAt);
   };
 
+  const drawMagicWaterSpriteOutline = (sprite, p, bob = 0, drawAt = null) => {
+    drawBuffSpriteOutline(sprite, p, bob, magicWaterOutlineCache, "#b56cff", "#8a35ff", 2, 9, drawAt);
+  };
+
   const drawBuffAuraSpriteOutline = (auraType, sprite, p, bob = 0, drawAt = null) => {
     if (auraType === "steel") drawSteelSpriteOutline(sprite, p, bob, drawAt);
     if (auraType === "hotBlood") drawHotBloodSpriteOutline(sprite, p, bob, drawAt);
     if (auraType === "sake4") drawSake4SpriteOutline(sprite, p, bob, drawAt);
+    if (auraType === "magicWater") drawMagicWaterSpriteOutline(sprite, p, bob, drawAt);
   };
 
   const isSake4MoveSkillFreeActive = (unit) => Boolean(unit && unit.moveSkillFreeUntil && currentNow(target) < unit.moveSkillFreeUntil);
+  const isBuffAuraVisible = (unit) => (unit?.buffAuraVisibleAt ?? 0) <= currentNow(target);
 
   const activeBuffAuraType = (unit) => {
     if (unit.buffAuraType === "steel" && target.isSteelDefenseActive(unit)) return "steel";
     if (unit.buffAuraType === "hotBlood" && target.isHotBloodActive(unit)) return "hotBlood";
-    if (unit.buffAuraType === "sake4" && isSake4MoveSkillFreeActive(unit)) return "sake4";
+    if (unit.buffAuraType === "sake4" && isSake4MoveSkillFreeActive(unit) && isBuffAuraVisible(unit)) return "sake4";
+    if (unit.buffAuraType === "magicWater" && isSake4MoveSkillFreeActive(unit) && isBuffAuraVisible(unit)) return "magicWater";
     if (target.isSteelDefenseActive(unit)) return "steel";
     if (target.isHotBloodActive(unit)) return "hotBlood";
-    if (isSake4MoveSkillFreeActive(unit)) return "sake4";
+    if (isSake4MoveSkillFreeActive(unit) && isBuffAuraVisible(unit)) return "sake4";
     return "";
   };
 
@@ -367,6 +375,7 @@ export function installUnitRendererGlobals(target = globalThis) {
       hotBloodUntil: caster.hotBloodUntil,
       moveSkillFreeUntil: caster.moveSkillFreeUntil,
       buffAuraType: caster.buffAuraType,
+      buffAuraVisibleAt: caster.buffAuraVisibleAt,
     };
   };
 
@@ -488,6 +497,7 @@ export function installUnitRendererGlobals(target = globalThis) {
     drawSteelSpriteOutline,
     drawHotBloodSpriteOutline,
     drawSake4SpriteOutline,
+    drawMagicWaterSpriteOutline,
     drawBuffAuraSpriteOutline,
     drawBuffSpriteOutline,
     spriteColorMask,
@@ -517,6 +527,7 @@ export function installUnitRendererGlobals(target = globalThis) {
     drawSteelSpriteOutline,
     drawHotBloodSpriteOutline,
     drawSake4SpriteOutline,
+    drawMagicWaterSpriteOutline,
     drawBuffAuraSpriteOutline,
     drawBuffSpriteOutline,
     spriteColorMask,

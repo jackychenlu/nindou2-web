@@ -13,6 +13,21 @@ function runtimeWindow(target) {
 }
 
 export function installAppBootstrapGlobals(target = globalThis) {
+  let assetsReady = false;
+  let assetLoadPromise = null;
+
+  const areGameAssetsReady = () => assetsReady;
+
+  const whenGameAssetsReady = () => {
+    if (!assetLoadPromise) {
+      assetLoadPromise = target.loadImages().then(() => {
+        assetsReady = true;
+        return true;
+      });
+    }
+    return assetLoadPromise;
+  };
+
   const bindGameEvents = () => {
     const canvas = query(target, "#game");
     const resetBtn = query(target, "#resetBtn");
@@ -78,12 +93,13 @@ export function installAppBootstrapGlobals(target = globalThis) {
   const startGameApp = () => {
     bindGameEvents();
     setupRoomUi();
-    return target.loadImages().then(() => {
+    return whenGameAssetsReady().then(() => {
+      const state = resolveRuntimeState(target);
       target.updateRuleModeUi?.();
       target.updateDeathModeUi?.();
       target.updateRoomMapUi?.();
       target.applyVolumeControls?.();
-      target.resetGame?.();
+      if (state?.inRoom !== false) target.resetGame?.();
       target.startBgm?.();
       if (typeof target.startDrawLoop === "function") target.startDrawLoop();
       else target.draw?.();
@@ -94,11 +110,15 @@ export function installAppBootstrapGlobals(target = globalThis) {
     bindGameEvents,
     setupRoomUi,
     startGameApp,
+    areGameAssetsReady,
+    whenGameAssetsReady,
   });
 
   target.NindouAppBootstrap = {
     bindGameEvents,
     setupRoomUi,
     startGameApp,
+    areGameAssetsReady,
+    whenGameAssetsReady,
   };
 }

@@ -29,7 +29,7 @@
 - `scripts/load-classic-runtime.module.mjs` 保留相容入口；manifest 為空時回傳 `mode: "none"`，不載入 classic bundle。
 - `vite.config.js` 目前只打包 module entry，並複製 `assets/`、`scripts/`、`index.html`、`style.css` 到 `dist/`。
 - 目前 production build 會轉換 18 個 modules。
-- 想用本機 Vite server 玩/測，可雙擊 repo 根目錄的 `啟動遊戲.cmd`。黑色視窗需保持開著，關掉 server 就停止。
+- 想用本機快速遊玩，可雙擊 repo 根目錄的 `啟動遊戲.cmd`。launcher 會用背景 server 開 `http://127.0.0.1:5174/index.html`，正常啟動後只顯示瀏覽器遊戲頁。
 - `weapons` 已切成單一來源：只手改 `scripts/data/weapons.module.mjs`，再跑 `npm run sync:weapons` 產生 `scripts/data/weapons.js`。
 - `config` 已先切一段單一來源：`ninjutsuRuleProfiles + attackNinjuOutcomeTables + 六顆忍術按鈕 rect + itemSlot/defaultConsumable 常數 + mapItemDrop 常數 + countdown 常數 + soul/ninjuChain 常數 + 核心戰鬥常數(weapon/maxSkill/objectHp/maxHp/collision) + 開局/重生常數(hold/charge/respawn/unit) + 移動殘影常數(ARRIVE/PREARRIVE) + 版面/出生區常數(ui/startingAreas) + 地圖設定常數(grid/drawInset/roomMapDefinitions) + NindouConfig` 段落由 `scripts/data/config.module.mjs` 回填，改完要跑 `npm run sync:config-nindou`。
 - `ninjutsu-definitions` 已切成單一來源：只手改 `scripts/data/ninjutsu-definitions.module.mjs`，再跑 `npm run sync:ninjutsu-definitions` 產生 `scripts/data/ninjutsu-definitions.js`。
@@ -67,7 +67,7 @@
 - `package.json`：新增 `dev`、`build`、`preview` scripts，加入 `vite`。
 - `vite.config.js`：設定 `base: "./"`，build entry 指向 `scripts/main.module.js`，並用 copy plugin 複製 classic runtime 需要的檔案。
 - `index.html`：只保留 `scripts/main.module.js` 一個 module entry。
-- `啟動遊戲.cmd`：雙擊啟動 `npm run dev` 並開 `http://127.0.0.1:5173/index.html`；使用自身所在資料夾作為工作目錄，搬到其他電腦路徑不同也可用。若第一次沒有 `node_modules`，會先執行 `npm install`。
+- `啟動遊戲.cmd`：雙擊後以隱藏背景流程啟動輕量 server，並開 `http://127.0.0.1:5174/index.html`；使用自身所在資料夾作為工作目錄，搬到其他電腦路徑不同也可用。若第一次沒有 `node_modules`，會先執行 `npm install`。
 
 ### Data modules
 
@@ -107,7 +107,7 @@ Classic scripts 暫時會暴露 bridge 供 module probe 比對：
 - `scripts/systems/grid.js -> globalThis.NindouGrid`
 - `scripts/systems/audio.js -> globalThis.NindouAudio`
 - `scripts/systems/match.js -> globalThis.NindouMatch`
-- `scripts/systems/consumables.js -> globalThis.NindouConsumables`
+- `scripts/systems/consumables.module.mjs -> install-consumables-globals.module.mjs -> globalThis.NindouConsumables`
 - `scripts/systems/movement.js -> globalThis.NindouMovement`
 - `scripts/bootstrap/install-ai-globals.module.mjs -> globalThis.NindouAi`
 - `scripts/bootstrap/install-combat-globals.module.mjs -> globalThis.NindouCombat`
@@ -614,8 +614,8 @@ map 資料日常流程：
 ## 2026-05-25 Consumables runtime switched to module install
 
 - Added `scripts/bootstrap/install-consumables-globals.module.mjs` and wired it in `scripts/runtime-bootstrap.module.mjs`.
-- `scripts/classic-runtime-manifest.module.mjs` no longer includes `scripts/systems/consumables.js` in `CLASSIC_RUNTIME_SCRIPT_PATHS`.
-- Added `tests/install-consumables-globals.test.mjs`; bundle expectation in `tests/classic-runtime-bundle.test.mjs` now asserts `consumables.js` is absent from the generated classic bundle.
+- `scripts/classic-runtime-manifest.module.mjs` no longer includes a legacy consumables script in `CLASSIC_RUNTIME_SCRIPT_PATHS`.
+- Added `tests/install-consumables-globals.test.mjs`; bundle expectation in `tests/classic-runtime-bundle.test.mjs` now asserts no consumables classic script is bundled.
 
 ## 2026-05-25 Movement/AI/Combat installer groundwork
 

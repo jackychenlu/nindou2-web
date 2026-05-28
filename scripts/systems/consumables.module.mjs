@@ -1,7 +1,11 @@
 export const itemSlotCount = 10;
 export const defaultConsumableDisableMs = 1500;
 export const defaultConsumableInvincibleMs = 1500;
+export const magicWaterConsumableEffectFrameCount = 40;
+export const magicWaterConsumableEffectMs = defaultConsumableDisableMs;
+export const magicWaterConsumableEffectFrameMs = magicWaterConsumableEffectMs / magicWaterConsumableEffectFrameCount;
 export const sake4MoveSkillFreeMs = 15000;
+export const consumableEffectDelayMs = defaultConsumableDisableMs;
 export const ninjuChainMaxGap = 500;
 export const ninjuFollowupMoveAllowance = 2;
 export const defaultMaxSkill = 18;
@@ -9,11 +13,12 @@ export const defaultMaxSkill = 18;
 export function itemLabel(type) {
   if (type === "backup3") return "神水";
   if (type === "sake4") return "神酒";
+  if (type === "magicWater") return "魔水";
   return "道具";
 }
 
 export function isImplementedConsumable(type) {
-  return type === "backup3" || type === "sake4";
+  return type === "backup3" || type === "sake4" || type === "magicWater";
 }
 
 export function itemCountsFromSlots(slots) {
@@ -132,13 +137,20 @@ export function applyConsumableUseDefault(unit, now, options = {}) {
 export function startConsumableUseEffect(stateLike, unit, now, type = "regen_sp", options = {}) {
   if (!unit) return;
   const disableMs = options.defaultConsumableDisableMs ?? defaultConsumableDisableMs;
+  const frameDurationMs = type === "magic_water"
+    ? (options.magicWaterConsumableEffectFrameMs ?? magicWaterConsumableEffectFrameMs)
+    : undefined;
+  const duration = type === "magic_water"
+    ? (options.magicWaterConsumableEffectMs ?? (frameDurationMs * magicWaterConsumableEffectFrameCount))
+    : disableMs;
   if (!stateLike.consumableEffects) stateLike.consumableEffects = [];
   stateLike.consumableEffects = stateLike.consumableEffects.filter((effect) => effect.unitId !== unit.id || effect.type !== type);
   stateLike.consumableEffects.push({
     unitId: unit.id,
     type,
     startedAt: now,
-    duration: disableMs,
+    duration,
+    frameDurationMs,
   });
 }
 
@@ -151,7 +163,62 @@ export function restoreConsumableSkill(unit, options = {}) {
 export function applySake4MoveSkillFree(unit, now, options = {}) {
   const durationMs = options.sake4MoveSkillFreeMs ?? sake4MoveSkillFreeMs;
   unit.moveSkillFreeUntil = Math.max(unit.moveSkillFreeUntil || 0, now + durationMs);
-  unit.buffAuraType = "sake4";
+  unit.buffAuraType = options.buffAuraType ?? "sake4";
+  if (!unit.buffAuraVisibleAt || unit.buffAuraVisibleAt > now) {
+    unit.buffAuraVisibleAt = now;
+  }
+}
+
+export function applyMagicWaterBuff(unit, now, options = {}) {
+  const durationMs = options.sake4MoveSkillFreeMs ?? sake4MoveSkillFreeMs;
+  applySake4MoveSkillFree(unit, now, { ...options, buffAuraType: "magicWater" });
+  unit.magicWaterUntil = Math.max(unit.magicWaterUntil || 0, now + durationMs);
+}
+
+function consumableEffectType(type) {
+  return type === "magicWater" ? "magic_water" : "regen_sp";
+}
+
+export function makePendingConsumableEffect(type, now, options = {}) {
+  return {
+    type,
+    applyAt: now + (options.consumableEffectDelayMs ?? consumableEffectDelayMs),
+    applied: false,
+    applyAfterNinjutsu: false,
+  };
+}
+
+export function isPendingConsumableEffectReady(effect, now) {
+  return Boolean(effect && !effect.applied && now >= effect.applyAt);
+}
+
+export function applyConsumableItemEffect(unit, type, now, callbacks = {}) {
+  restoreConsumableSkill(unit, callbacks);
+  if (type === "sake4") {
+    applySake4MoveSkillFree(unit, now, callbacks);
+  } else if (type === "magicWater") {
+    applyMagicWaterBuff(unit, now, callbacks);
+  }
+  callbacks.setMessage?.(
+    type === "sake4"
+      ? `${unit.name} 使用神酒，技量已回滿，15 秒內移動不消耗技。`
+      : type === "magicWater"
+        ? `${unit.name} 使用魔水，技量已回滿，15 秒內移動不消耗技，攻擊與防禦變為 2 倍。`
+        : `${unit.name} 使用神水，技量已回滿。`,
+  );
+}
+
+export function applyPendingConsumableEffect(unit, effect, now, callbacks = {}) {
+  if (!unit || !effect || effect.applied) return false;
+  applyConsumableItemEffect(unit, effect.type, now, callbacks);
+  effect.applied = true;
+  return true;
+}
+
+function applyConsumableUsePendingEffect(unit, current, now, callbacks = {}) {
+  if (!current?.pendingEffect || current.pendingEffect.applyAfterNinjutsu) return false;
+  if (!isPendingConsumableEffectReady(current.pendingEffect, now)) return false;
+  return applyPendingConsumableEffect(unit, current.pendingEffect, now, callbacks);
 }
 
 export function executeConsumableItem(stateLike, unit, type, now, queue = [], chainMoves = 0, pendingNinjutsu = [], callbacks = {}) {
@@ -159,12 +226,8 @@ export function executeConsumableItem(stateLike, unit, type, now, queue = [], ch
     callbacks = pendingNinjutsu || {};
     pendingNinjutsu = [];
   }
-  restoreConsumableSkill(unit, callbacks);
-  if (type === "sake4") {
-    applySake4MoveSkillFree(unit, now, callbacks);
-  }
   applyConsumableUseDefault(unit, now, callbacks);
-  startConsumableUseEffect(stateLike, unit, now, "regen_sp", callbacks);
+  startConsumableUseEffect(stateLike, unit, now, consumableEffectType(type), callbacks);
   unit.consumableUse = {
     phase: "active",
     type,
@@ -173,11 +236,10 @@ export function executeConsumableItem(stateLike, unit, type, now, queue = [], ch
     queue,
     chainMoves,
     pendingNinjutsu,
+    pendingEffect: makePendingConsumableEffect(type, now, callbacks),
   };
   callbacks.playSound?.("spUp");
-  callbacks.setMessage?.(type === "sake4"
-    ? `${unit.name} 使用神酒，技量已回滿，15 秒內移動不消耗技。`
-    : `${unit.name} 使用神水，技量已回滿。`);
+  callbacks.setMessage?.(`${unit.name} 使用${itemLabel(type)}。`);
 }
 
 export function requestConsumableUse(stateLike, unit, type, slotIndex = -1, callbacks = {}) {
@@ -193,8 +255,6 @@ export function requestConsumableUse(stateLike, unit, type, slotIndex = -1, call
   }
   callbacks.playSound?.("clickItem");
   const now = callbacks.now ?? 0;
-  restoreConsumableSkill(unit, callbacks);
-  if (type === "sake4") applySake4MoveSkillFree(unit, now, callbacks);
   if (unit.consumableUse) {
     removeInventoryItem(unit, type, 1, slotIndex);
     syncRoomInventoryFromPlayerUnit(stateLike, unit);
@@ -214,9 +274,21 @@ export function updateConsumables(stateLike, now, callbacks = {}) {
     const current = unit.consumableUse;
     if (!current) continue;
     if (current.phase === "active") {
+      applyConsumableUsePendingEffect(unit, current, now, callbacks);
       if (now - current.startedAt < current.duration) continue;
-      if (current.queue?.length) {
-        unit.consumableUse = { phase: "gap", startedAt: now, duration: callbacks.ninjuChainMaxGap ?? ninjuChainMaxGap, queue: current.queue, gapMoves: 0 };
+      if (current.pendingEffect && !current.pendingEffect.applied && !current.pendingEffect.applyAfterNinjutsu) {
+        applyPendingConsumableEffect(unit, current.pendingEffect, now, callbacks);
+      }
+      if (current.queue?.length || current.pendingMoneyDart) {
+        unit.consumableUse = {
+          phase: "gap",
+          startedAt: now,
+          duration: callbacks.ninjuChainGap ?? callbacks.ninjuChainMaxGap ?? ninjuChainMaxGap,
+          queue: current.queue || [],
+          gapMoves: 0,
+          pendingMoneyDart: current.pendingMoneyDart,
+          pendingEffect: current.pendingEffect,
+        };
         if (unit.id === callbacks.playerUnitId) setMessage(`${unit.name}：道具連用空檔中。`);
       } else {
         unit.consumableUse = null;
@@ -224,10 +296,16 @@ export function updateConsumables(stateLike, now, callbacks = {}) {
       continue;
     }
     if (current.phase === "gap") {
+      applyConsumableUsePendingEffect(unit, current, now, callbacks);
       const movedInGap = (current.gapMoves || 0) > 0;
       if (!movedInGap && now - current.startedAt < current.duration) continue;
       const [nextType, ...remainingQueue] = current.queue || [];
       if (!nextType) {
+        if (current.pendingMoneyDart || current.nextType === "moneyDart") {
+          unit.consumableUse = null;
+          callbacks.startMoneyDart?.(unit, now, true);
+          continue;
+        }
         unit.consumableUse = null;
         continue;
       }
@@ -259,26 +337,29 @@ export function summarizeConsumableHelpers(legacy = {}) {
     skill: 0,
     skillMax: 18,
     gold: 0,
-    itemSlots: ["backup3", "sake4"],
-    items: { backup3: 1, sake4: 1 },
+    itemSlots: ["backup3", "sake4", "magicWater"],
+    items: { backup3: 1, sake4: 1, magicWater: 1 },
   };
   const stateLike = { consumableEffects: [] };
   addInventoryItem(unit, "backup3", 1);
   removeInventoryItem(unit, "backup3", 1, 0);
   addGold(unit, 2);
-  setUnitInventorySlots(unit, ["sake4", "backup3", "backup3"]);
+  setUnitInventorySlots(unit, ["sake4", "backup3", "backup3", "magicWater"]);
   applyConsumableUseDefault(unit, 1000);
-  startConsumableUseEffect(stateLike, unit, 1000);
+  applyMagicWaterBuff(unit, 1000);
+  startConsumableUseEffect(stateLike, unit, 1000, consumableEffectType("magicWater"));
   const moduleResult = {
-    labels: ["backup3", "sake4", "x"].map(itemLabel),
-    implemented: ["backup3", "sake4", "x"].map(isImplementedConsumable),
-    counts: itemCountsFromSlots(["backup3", "", "backup3", "sake4"]),
-    firstEmpty: firstEmptyItemSlot(["backup3", "", "sake4"]),
+    labels: ["backup3", "sake4", "magicWater", "x"].map(itemLabel),
+    implemented: ["backup3", "sake4", "magicWater", "x"].map(isImplementedConsumable),
+    counts: itemCountsFromSlots(["backup3", "", "backup3", "sake4", "magicWater"]),
+    firstEmpty: firstEmptyItemSlot(["backup3", "", "sake4", "magicWater"]),
     unit: {
       gold: unit.gold,
       skill: unit.skill,
       moveSkillFreeUntil: unit.moveSkillFreeUntil,
+      magicWaterUntil: unit.magicWaterUntil,
       buffAuraType: unit.buffAuraType,
+      buffAuraVisibleAt: unit.buffAuraVisibleAt,
       disabledUntil: unit.disabledUntil,
       invincibleUntil: unit.invincibleUntil,
       itemSlots: unit.itemSlots,
@@ -291,6 +372,6 @@ export function summarizeConsumableHelpers(legacy = {}) {
   return {
     moduleResult,
     legacyResult,
-    isSynced: stable(moduleResult) === stable(legacyResult),
+    isSynced: legacyResult ? stable(moduleResult) === stable(legacyResult) : true,
   };
 }
