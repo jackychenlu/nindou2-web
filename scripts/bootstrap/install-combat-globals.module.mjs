@@ -87,7 +87,7 @@ export function installCombatGlobals(target = globalThis) {
   };
 
   function damageUnit(target, baseDamage, label, announce = true, attacker = null) {
-    const damage = defendedDamage(target, baseDamage);
+    const damage = defendedDamageRuntime(target, baseDamage);
     target.hp -= damage;
     recordDamage(attacker, target, damage);
     if (typeof queueAiRedRetaliation === "function" && attacker && target.alive) {

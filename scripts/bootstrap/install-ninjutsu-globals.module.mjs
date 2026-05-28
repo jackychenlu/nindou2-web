@@ -533,7 +533,7 @@ export function installNinjutsuGlobals(target = globalThis) {
   function checkPendingAttackNinju(currentNow) {
     for (const unit of state().units) {
       if (!unit.pendingAttackNinju?.length) continue;
-      if (!unit.alive || isUnitInvincible(unit)) continue;
+      if (!unit.alive || isUnitInvincible(unit) || unit.ninju !== null || unit.consumableUse !== null) continue;
       const pending = unit.pendingAttackNinju;
       unit.pendingAttackNinju = [];
       for (const entry of pending) {
