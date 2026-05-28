@@ -467,7 +467,7 @@ export function installUnitRendererGlobals(target = globalThis) {
         }
       }
 
-      drawHeldMoneyDart(unit, p);
+      if (!isMoving) drawHeldMoneyDart(unit, p);
       drawRespawnPointer(unit, p);
 
       if (isPlayer) {

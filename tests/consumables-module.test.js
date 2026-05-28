@@ -91,7 +91,7 @@ test("queued 神酒 applies movement-free buff immediately but defers skill rest
   assert.equal(unit.skill, 1); // 技量延遲到動畫結束才回滿
   assert.deepEqual(unit.consumableUse.queue, ["sake4"]);
   assert.deepEqual(sounds, ["clickItem"]);
-  assert.equal(unit.moveSkillFreeUntil, 16200); // 移動不耗技 buff 立即套用
-  assert.equal(unit.buffAuraType, "sake4");
+  assert.equal(unit.moveSkillFreeUntil, undefined); // 移動不耗技 buff 也延遲到動畫結束
+  assert.equal(unit.buffAuraType, undefined); // buff aura 也延遲到動畫結束
   assert.deepEqual(stateLike.consumableEffects, []);
 });
