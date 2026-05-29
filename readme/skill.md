@@ -11,6 +11,7 @@
 - 如果文件或註解出現亂碼，優先修 UTF-8 讀寫方式，不要改寫成別的語言逃避問題。
 - 新功能先放對位置：資料進 `scripts/data/*` 或 module 單一來源，行為進 `scripts/systems/*` 或 `scripts/bootstrap/install-*-globals.module.mjs`。
 - 同一份規則不要在多個檔案維護兩套；模式差異統一經過 `scripts/data/rule-modes.js`。
+- [忍2修改]模式若有問題先不管，只先確認[忍2原版]正確
 
 ---
 
