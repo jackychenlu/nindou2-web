@@ -29,7 +29,7 @@ export function buildConfigBridgeBlock(configModule) {
   return `${CONFIG_BRIDGE_START_MARKER}
 // AUTO-GENERATED SECTION.
 // Source: scripts/data/config.module.mjs
-// Run: npm run sync:config-nindou
+// Run: pnpm sync:config-nindou
 ${literalAssignments}
 ${scalarAssignments}
 function roomMapDefinitionEntries() {

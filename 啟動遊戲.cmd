@@ -7,17 +7,17 @@ if /i not "%~1"=="--hidden" (
   exit /b
 )
 
-where npm >nul 2>nul
+where pnpm >nul 2>nul
 if errorlevel 1 (
-  set "NINDOU_LAUNCH_ERROR=npm was not found. Please install Node.js, then run this file again."
+  set "NINDOU_LAUNCH_ERROR=pnpm was not found. Please install pnpm (npm install -g pnpm), then run this file again."
   goto show_error
 )
 
 if not exist "node_modules\vite" (
   echo Installing dependencies for the first run. Please wait...
-  call npm install
+  call pnpm install
   if errorlevel 1 (
-    set "NINDOU_LAUNCH_ERROR=npm install failed. Please check your network connection and Node.js installation."
+    set "NINDOU_LAUNCH_ERROR=pnpm install failed. Please check your network connection and Node.js installation."
     goto show_error
   )
 )
