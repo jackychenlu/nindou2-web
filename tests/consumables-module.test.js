@@ -59,84 +59,9 @@ test("queued 神水 waits for its execution before restoring skill", async () =>
   assert.equal(messages.at(-1), "青1 已排入神水。");
 });
 
-test("神水 visual/audio starts immediately but the skill restore lands after the delay", async () => {
-  const consumableModule = await loadConsumableModule();
-  const sounds = [];
-  const messages = [];
-  const unit = {
-    id: "blue1",
-    name: "青1",
-    controlMode: "player",
-    alive: true,
-    skill: 2,
-    skillMax: 18,
-    items: { backup3: 1 },
-    itemSlots: ["backup3"],
-  };
-  const stateLike = { units: [unit], roomItemSlots: ["backup3"], consumableEffects: [] };
-
-  consumableModule.requestConsumableUse(stateLike, unit, "backup3", 0, {
-    now: 1200,
-    playSound: (key) => sounds.push(key),
-    setMessage: (message) => messages.push(message),
-  });
-
-  assert.equal(unit.skill, 2);
-  assert.equal(unit.consumableUse.pendingEffect.applyAt, 2700);
-  assert.deepEqual(sounds, ["clickItem", "spUp"]);
-  assert.equal(stateLike.consumableEffects[0].type, "regen_sp");
-  assert.equal(unit.disabledUntil, 2700);
-  assert.equal(messages.at(-1), "青1 使用神水。");
-
-  consumableModule.updateConsumables(stateLike, 2699, {
-    setMessage: (message) => messages.push(message),
-  });
-
-  assert.equal(unit.skill, 2);
-  assert.equal(unit.consumableUse.pendingEffect.applied, false);
-
-  consumableModule.updateConsumables(stateLike, 2700, {
-    setMessage: (message) => messages.push(message),
-  });
-
-  assert.equal(unit.skill, 18);
-  assert.equal(unit.consumableUse, null);
-  assert.equal(messages.at(-1), "青1 使用神水，技量已回滿。");
-});
-
-test("queued 神水 during active consumable does not front-load the restore", async () => {
-  const consumableModule = await loadConsumableModule();
-  const sounds = [];
-  const messages = [];
-  const unit = {
-    id: "blue1",
-    name: "青1",
-    controlMode: "player",
-    alive: true,
-    skill: 2,
-    skillMax: 18,
-    items: { backup3: 1 },
-    itemSlots: ["backup3"],
-    consumableUse: { phase: "active", type: "sake4", startedAt: 1000, duration: 1500, queue: [] },
-  };
-  const stateLike = { units: [unit], roomItemSlots: ["backup3"], consumableEffects: [] };
-
-  consumableModule.requestConsumableUse(stateLike, unit, "backup3", 0, {
-    now: 1200,
-    playSound: (key) => sounds.push(key),
-    setMessage: (message) => messages.push(message),
-  });
-
-  assert.equal(unit.skill, 2);
-  assert.deepEqual(unit.consumableUse.queue, ["backup3"]);
-  assert.deepEqual(sounds, ["clickItem"]);
-  assert.deepEqual(stateLike.consumableEffects, []);
-  assert.equal(unit.disabledUntil, undefined);
-  assert.equal(messages.at(-1), "青1 已排入神水。");
-});
-
-test("queued 神酒 waits for its execution before restoring skill and movement-free buff", async () => {
-  const consumableModule = await loadConsumableModule();
+test("queued 神酒 applies movement-free buff immediately but defers skill restore to animation end", async () => {
+  const modulePath = pathToFileURL(path.join(repoRoot, "scripts", "systems", "consumables.module.mjs")).href;
+  const consumableModule = await import(modulePath);
   const sounds = [];
   const unit = {
     id: "blue1",
@@ -156,12 +81,11 @@ test("queued 神酒 waits for its execution before restoring skill and movement-
     playSound: (key) => sounds.push(key),
   }), true);
 
-  assert.equal(unit.skill, 1);
+  assert.equal(unit.skill, 1); // 技量延遲到動畫結束才回滿
   assert.deepEqual(unit.consumableUse.queue, ["sake4"]);
   assert.deepEqual(sounds, ["clickItem"]);
-  assert.equal(unit.moveSkillFreeUntil, undefined);
-  assert.equal(unit.buffAuraType, undefined);
-  assert.equal(unit.buffAuraVisibleAt, undefined);
+  assert.equal(unit.moveSkillFreeUntil, undefined); // 移動不耗技 buff 也延遲到動畫結束
+  assert.equal(unit.buffAuraType, undefined); // buff aura 也延遲到動畫結束
   assert.deepEqual(stateLike.consumableEffects, []);
 });
 

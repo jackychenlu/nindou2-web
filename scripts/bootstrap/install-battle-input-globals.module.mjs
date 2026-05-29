@@ -19,7 +19,7 @@ export function installBattleInputGlobals(target = globalThis) {
     state.pointer.cell = target.pointToCell(state.pointer.x, state.pointer.y);
 
     const lookUnit = state.pressedUnit || target.selectedUnit();
-    if (lookUnit && target.canControlUnit(lookUnit) && lookUnit.alive && !target.isUnitDisabled(lookUnit)) {
+    if (lookUnit && target.canControlUnit(lookUnit) && lookUnit.alive && !target.isUnitDisabled(lookUnit) && target.weaponIsReady(lookUnit)) {
       target.updateFacingFromPointer(lookUnit);
     }
 
@@ -62,7 +62,7 @@ export function installBattleInputGlobals(target = globalThis) {
     const unitMoving = unitRaw && unitRaw.moveTrail && (now(target) - unitRaw.moveTrail.startedAt) < target.ARRIVE_TOTAL;
     const unit = unitMoving ? null : unitRaw;
     const selected = target.selectedUnit();
-    state.pressedUnit = unit && target.canControlUnit(unit) && !unit.moneyDart ? unit : null;
+    state.pressedUnit = unit && target.canControlUnit(unit) && !unit.moneyDart && target.weaponIsReady(unit) ? unit : null;
     state.pressTime = now(target);
     state.dragMoved = false;
     state.charging = false;
@@ -77,6 +77,10 @@ export function installBattleInputGlobals(target = globalThis) {
     }
 
     if (unit && target.canControlUnit(unit)) {
+      if (!target.weaponIsReady(unit)) {
+        target.setMessage(`${unit.name}：武器冷卻中，無法集氣。`);
+        return;
+      }
       state.selectedId = unit.id;
       target.setMessage(`${unit.name}：請持續按住以累積技量。`);
       return;

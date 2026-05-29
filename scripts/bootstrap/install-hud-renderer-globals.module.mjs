@@ -265,10 +265,6 @@ export function installHudRendererGlobals(target = globalThis) {
       ctx.strokeRect(x, y, w, h);
       if (text) drawOutlinedText(text, x + w / 2, y + h / 2 + 1, target.localizedNinjuFontSize(15), "#ffe6a6", "center");
     }
-    if (active) {
-      ctx.fillStyle = "rgba(255,255,255,.35)";
-      ctx.fillRect(x, y, w, h);
-    }
     if ((isSteel || isHotBlood || isHeal || isAttackNinju || isSpecialNinju) && unit && unit.ninju?.type === type && unit.ninju.queue > 0) {
       drawOutlinedText(`x${unit.ninju.queue + 1}`, x + w - 10, y + 8, 12, "#fff2a8", "center");
     }

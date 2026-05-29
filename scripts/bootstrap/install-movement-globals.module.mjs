@@ -166,7 +166,7 @@ export function installMovementGlobals(target = globalThis) {
       target.setMessage("移動只能走橫向或直向。");
       return;
     }
-    const maxDistance = freeMoveActive ? Infinity : Math.floor(unit.skill);
+    const maxDistance = Math.floor(unit.skill);
     if (!freeMoveActive && maxDistance < 1) {
       target.setMessage(`技量不足，至少需要 1，目前只有 ${unit.skill.toFixed(1)}。`);
       return;

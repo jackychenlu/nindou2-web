@@ -7,19 +7,15 @@ if /i not "%~1"=="--hidden" (
   exit /b
 )
 
-where pnpm >nul 2>nul
-if errorlevel 1 (
-  set "NINDOU_LAUNCH_ERROR=pnpm was not found. Please install pnpm (npm install -g pnpm), then run this file again."
-  goto show_error
-)
-
-if not exist "node_modules\vite" (
-  echo Installing dependencies for the first run. Please wait...
-  call pnpm install
+if exist "%~dp0portable-node\node.exe" (
+  set "NODE_EXE=%~dp0portable-node\node.exe"
+) else (
+  where node >nul 2>nul
   if errorlevel 1 (
-    set "NINDOU_LAUNCH_ERROR=pnpm install failed. Please check your network connection and Node.js installation."
+    set "NINDOU_LAUNCH_ERROR=找不到 Node.js。請將 node.exe 放入 portable-node 資料夾，或安裝 Node.js 後再試一次。"
     goto show_error
   )
+  set "NODE_EXE=node"
 )
 
 set "GAME_URL=http://127.0.0.1:5174/index.html"
@@ -27,7 +23,7 @@ set "GAME_SERVER=scripts\tools\serve-game.mjs"
 
 powershell -NoProfile -ExecutionPolicy Bypass -Command "try { $r = Invoke-WebRequest -UseBasicParsing -Uri $env:GAME_URL -TimeoutSec 1; if ($r.StatusCode -ge 200) { exit 0 } } catch { exit 1 }"
 if errorlevel 1 (
-  powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process -FilePath 'node' -ArgumentList @($env:GAME_SERVER, '--host', '127.0.0.1', '--port', '5174') -WorkingDirectory (Get-Location).Path -WindowStyle Hidden"
+  powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process -FilePath '%NODE_EXE%' -ArgumentList @($env:GAME_SERVER, '--host', '127.0.0.1', '--port', '5174') -WorkingDirectory (Get-Location).Path -WindowStyle Hidden"
   powershell -NoProfile -ExecutionPolicy Bypass -Command "$deadline = (Get-Date).AddSeconds(15); do { try { $r = Invoke-WebRequest -UseBasicParsing -Uri $env:GAME_URL -TimeoutSec 1; if ($r.StatusCode -ge 200) { exit 0 } } catch {}; Start-Sleep -Milliseconds 100 } while ((Get-Date) -lt $deadline); exit 1"
   if errorlevel 1 (
     set "NINDOU_LAUNCH_ERROR=Timed out waiting for the local server."

@@ -13,6 +13,23 @@ function now(target) {
 }
 
 export function installCombatRendererGlobals(target = globalThis) {
+  const objectHitFlashCache = new WeakMap();
+
+  const getObjectHitFlashFrame = (img) => {
+    if (objectHitFlashCache.has(img)) return objectHitFlashCache.get(img);
+    const flashCanvas = target.document?.createElement?.("canvas");
+    if (!flashCanvas) return null;
+    flashCanvas.width = img.width;
+    flashCanvas.height = img.height;
+    const fctx = flashCanvas.getContext("2d");
+    fctx.drawImage(img, 0, 0);
+    fctx.globalCompositeOperation = "source-in";
+    fctx.fillStyle = "#ffffff";
+    fctx.fillRect(0, 0, img.width, img.height);
+    objectHitFlashCache.set(img, flashCanvas);
+    return flashCanvas;
+  };
+
   const drawMapObjects = () => {
     const state = resolveRuntimeState(target);
     const { ctx } = canvasContext(target);
@@ -35,11 +52,15 @@ export function installCombatRendererGlobals(target = globalThis) {
         ctx.fillRect(center.x - width / 2, center.y - height / 2, width, height);
       }
 
-      if (object.breakable && object.hp < target.objectHp) {
-        ctx.fillStyle = "rgba(0,0,0,.45)";
-        ctx.fillRect(center.x - 16, center.y - height * 0.78, 32, 4);
-        ctx.fillStyle = "#ffd766";
-        ctx.fillRect(center.x - 16, center.y - height * 0.78, 32 * Math.max(0, object.hp / object.maxHp), 4);
+      if (object.hitFlash > 0) {
+        const flashFrame = img ? getObjectHitFlashFrame(img) : null;
+        if (flashFrame) {
+          ctx.save();
+          ctx.globalAlpha = object.hitFlash * 0.75;
+          ctx.drawImage(flashFrame, drawX - width / 2, drawY - height * anchorY, width, height);
+          ctx.restore();
+        }
+        object.hitFlash = Math.max(0, object.hitFlash - 0.08);
       }
     }
   };
@@ -175,7 +196,7 @@ export function installCombatRendererGlobals(target = globalThis) {
       const headFrameIdx = Math.max(0, Math.min(headCfg.frames.length - 1, frameIdx));
       const headPx = headCfg.frames[headFrameIdx];
       const scale = target.moneyDartVisualOffsets.shoot.scale;
-      target.drawMoneyDartShootEye(unit, unit.facing, {
+      target.drawMoneyDartShootEye(unit, cast.dir, {
         x: placement.x + headPx.x * scale - headCfg.w / 2,
         y: placement.y + headPx.y * scale - headCfg.h / 2,
       }, headCfg);
