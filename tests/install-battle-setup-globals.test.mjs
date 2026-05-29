@@ -12,7 +12,21 @@ function card(team, slot, active = true) {
 
 test("installBattleSetupGlobals wires reset and starting unit helpers", () => {
   const calls = [];
-  const state = { inRoom: false };
+  const state = {
+    inRoom: false,
+    roomItemSlots: [
+      "backup3",
+      "backup3",
+      "backup3",
+      "backup3",
+      "backup3",
+      "magicWater",
+      "magicWater",
+      "magicWater",
+      "magicWater",
+      "magicWater",
+    ],
+  };
   const target = {
     performance: { now: () => 1000 },
     Math: { random: () => 0 },
@@ -38,7 +52,12 @@ test("installBattleSetupGlobals wires reset and starting unit helpers", () => {
     selectedHpValue: () => 300,
     selectedSkillValue: () => 18,
     buildMapObjects: () => [{ id: "map" }],
-    applyRoomInventoryToPlayerUnit: () => calls.push("inventory"),
+    applyRoomInventoryToPlayerUnit: () => {
+      const player = state.units.find((unit) => unit.controlMode === "player") || state.units[0];
+      player.itemSlots = [...state.roomItemSlots];
+      player.items = { backup3: 5, magicWater: 5 };
+      calls.push("inventory");
+    },
     setMessage: (message) => calls.push(message),
     updatePanel: () => calls.push("panel"),
   };
@@ -51,10 +70,27 @@ test("installBattleSetupGlobals wires reset and starting unit helpers", () => {
 
   target.resetGame();
   assert.equal(state.inRoom, false);
+  assert.equal(state.countdownStart, 0);
+  assert.equal(state.matchStart, 1000);
+  assert.equal(state.startSoundPlayed, true);
+  assert.equal(calls.some((call) => call === "sound:gameStarted"), false);
   assert.deepEqual(state.objects, [{ id: "map" }]);
   assert.equal(state.units.length, 2);
   assert.equal(state.units[0].appearanceKey, "zhaohuo");
   assert.equal(state.units[1].appearanceKey, "__team_default__");
+  assert.deepEqual(state.units[0].itemSlots, [
+    "backup3",
+    "backup3",
+    "backup3",
+    "backup3",
+    "backup3",
+    "magicWater",
+    "magicWater",
+    "magicWater",
+    "magicWater",
+    "magicWater",
+  ]);
+  assert.deepEqual(state.units[0].items, { backup3: 5, magicWater: 5 });
   assert.equal(state.units[0].name, "青1");
   assert.equal(state.units[1].controlMode, "ai_red");
   assert.equal(calls.includes("開始。"), true);

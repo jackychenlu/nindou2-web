@@ -22,9 +22,48 @@ test("installCombatGlobals wires combat helpers and compatibility object", () =>
   assert.equal(typeof target.attackAimedWeapon, "function");
   assert.equal(typeof target.damageUnit, "function");
   assert.equal(typeof target.unitWeaponDamage, "function");
+  assert.equal(typeof target.isMagicWaterActive, "function");
   assert.equal(typeof target.weaponAreaCells, "function");
   assert.equal(typeof target.NindouCombat, "object");
   assert.equal(typeof target.NindouCombat.runCombatHelperProbe, "function");
+});
+
+test("installCombatGlobals caps stacked magic water status multipliers at 2x", () => {
+  const target = {
+    performance: { now: () => 1000 },
+    inside: () => true,
+    unitAt: () => null,
+    objectAt: () => null,
+    isUnitInvincible: () => false,
+    NindouRuntimeState: {
+      getState: () => ({ ruleModeKey: "modified" }),
+    },
+  };
+
+  installCombatGlobals(target);
+
+  assert.equal(target.unitWeaponDamage({ weaponKey: "weapon4", hotBloodUntil: 2000, magicWaterUntil: 2000 }), 80);
+  assert.equal(target.defendedDamage({ steelUntil: 2000, magicWaterUntil: 2000 }, 170), 85);
+});
+
+test("installCombatGlobals keeps single status multipliers unchanged", () => {
+  const target = {
+    performance: { now: () => 1000 },
+    inside: () => true,
+    unitAt: () => null,
+    objectAt: () => null,
+    isUnitInvincible: () => false,
+    NindouRuntimeState: {
+      getState: () => ({ ruleModeKey: "modified" }),
+    },
+  };
+
+  installCombatGlobals(target);
+
+  assert.equal(target.unitWeaponDamage({ weaponKey: "weapon4", hotBloodUntil: 2000 }), 80);
+  assert.equal(target.unitWeaponDamage({ weaponKey: "weapon4", magicWaterUntil: 2000 }), 80);
+  assert.equal(target.defendedDamage({ steelUntil: 2000 }, 170), 100);
+  assert.equal(target.defendedDamage({ magicWaterUntil: 2000 }, 170), 85);
 });
 
 test("installCombatGlobals installs attackCell side effects", () => {

@@ -148,15 +148,15 @@ export function installRoomUiGlobals(target = globalThis) {
     const selects = lookSelects(target);
     if (selects.length === 0) return;
     const defaultLabel = target.roomLocaleText?.defaultLookOption || target.roomLocale?.()?.defaultLookOption || "預設外觀";
-    const optionsHtml = [
-      `<option value="${TEAM_DEFAULT_LOOK_KEY}">${defaultLabel}</option>`,
-      ...Object.entries(target.lookDefinitions || {}).map(([key, look]) => {
-      const label = target.roomLocaleText?.[look.labelKey] || look.label || key;
-      return `<option value="${key}">${label}</option>`;
-      }),
-    ].join("");
     selects.forEach((select) => {
       const team = select.dataset.team;
+      const optionsHtml = [
+        ...(team === "blue" ? [] : [`<option value="${TEAM_DEFAULT_LOOK_KEY}">${defaultLabel}</option>`]),
+        ...Object.entries(target.lookDefinitions || {}).filter(([key]) => !(team !== "blue" && key === "default")).map(([key, look]) => {
+          const label = target.roomLocaleText?.[look.labelKey] || look.label || key;
+          return `<option value="${key}">${label}</option>`;
+        }),
+      ].join("");
       const previousValue = select.value || (team === "blue" ? "default" : TEAM_DEFAULT_LOOK_KEY);
       select.innerHTML = optionsHtml;
       const fallbackValue = team === "blue" ? "default" : TEAM_DEFAULT_LOOK_KEY;

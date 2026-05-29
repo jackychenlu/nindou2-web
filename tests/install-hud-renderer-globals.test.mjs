@@ -44,8 +44,9 @@ function createTarget(state, calls = []) {
       steelButton: { width: 65, height: 30 },
       healButton: { width: 65, height: 30 },
       backup3Item: { width: 32, height: 32 },
+      magicWaterItem: { width: 32, height: 32 },
     },
-    imageSources: { backup3Item: "backup3.png", sake4Item: "sake4.png" },
+    imageSources: { backup3Item: "backup3.webp", sake4Item: "sake4.webp", magicWaterItem: "magic-water.webp" },
     itemSlotStartX: 510,
     itemSlotY: 552,
     itemSlotW: 36,
@@ -124,7 +125,8 @@ test("installHudRendererGlobals wires HUD helpers and runtime loadout bridge", (
   assert.equal(calls.some((call) => Array.isArray(call) && call[0] === "fillRect"), true);
   assert.equal(calls.some((call) => Array.isArray(call) && call[0] === "fillText"), true);
   assert.deepEqual(target.itemSlotRect(2), { x: 590, y: 552, w: 36, h: 34 });
-  assert.equal(target.itemIconSourceByType("backup3"), "backup3.png");
+  assert.equal(target.itemIconSourceByType("backup3"), "backup3.webp");
+  assert.equal(target.itemIconSourceByType("magicWater"), "magic-water.webp");
 });
 
 test("drawNinjuBar renders low-skill prompt through module HUD globals", () => {

@@ -133,12 +133,14 @@ export function installHudRendererGlobals(target = globalThis) {
   const itemIconByType = (type) => {
     if (type === "backup3") return target.images.backup3Item;
     if (type === "sake4") return target.images.sake4Item;
+    if (type === "magicWater") return target.images.magicWaterItem;
     return null;
   };
 
   const itemIconSourceByType = (type) => {
     if (type === "backup3") return target.imageSources.backup3Item;
     if (type === "sake4") return target.imageSources.sake4Item;
+    if (type === "magicWater") return target.imageSources.magicWaterItem;
     return "";
   };
 

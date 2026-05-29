@@ -3,6 +3,7 @@ import {
   markWeaponUsed,
   isSteelDefenseActive,
   isHotBloodActive,
+  isMagicWaterActive,
   unitWeaponDamage,
   defendedDamage,
   weaponAreaCells,
@@ -37,6 +38,7 @@ export function installCombatGlobals(target = globalThis) {
   const markWeaponUsedRuntime = (unit) => markWeaponUsed(unit, runtimeOptions(target));
   const isSteelDefenseActiveRuntime = (unit) => isSteelDefenseActive(unit, runtimeOptions(target));
   const isHotBloodActiveRuntime = (unit) => isHotBloodActive(unit, runtimeOptions(target));
+  const isMagicWaterActiveRuntime = (unit) => isMagicWaterActive(unit, runtimeOptions(target));
   const unitWeaponDamageRuntime = (unit) => unitWeaponDamage(unit, runtimeOptions(target));
   const defendedDamageRuntime = (unit, baseDamage) => defendedDamage(unit, baseDamage, runtimeOptions(target));
   const weaponAreaCellsRuntime = (attacker, dir) => weaponAreaCells(attacker, dir, runtimeOptions(target));
@@ -86,54 +88,57 @@ export function installCombatGlobals(target = globalThis) {
     if (targetUnit) target.gainSoul(targetUnit, target.soulCombatGainSteps);
   };
 
-  function damageUnit(target, baseDamage, label, announce = true, attacker = null) {
-    const damage = defendedDamage(target, baseDamage);
-    target.hp -= damage;
-    recordDamage(attacker, target, damage);
-    if (typeof queueAiRedRetaliation === "function" && attacker && target.alive) {
-      queueAiRedRetaliation(target, attacker, performance.now());
+  function damageUnit(victim, baseDamage, label, announce = true, attacker = null) {
+    const damage = defendedDamage(victim, baseDamage);
+    const state = resolveRuntimeState(target);
+    victim.hp -= damage;
+    recordDamage(attacker, victim, damage);
+    if (typeof queueAiRedRetaliation === "function" && attacker && victim.alive) {
+      queueAiRedRetaliation(victim, attacker, performance.now());
     }
-    target.hitFlash = 0.65;
-    playSound("weaponDamaged");
-    if (announce) setMessage(`${label}，造成 ${formatDamage(damage)} 傷害。`);
+    victim.hitFlash = 0.65;
+    target.playSound?.("weaponDamaged");
+    if (announce) target.setMessage?.(`${label}，造成 ${target.formatDamage?.(damage) || damage} 傷害。`);
     
-    if (target.hp <= 0) {
-        target.alive = false;
-        target.moneyDart = null;
-        if (typeof clearCloneDecoysForCaster === "function") clearCloneDecoysForCaster(target.id);
-        gainSoul(target, soulDeathGainSteps);
-        if (attacker && attacker !== target) attacker.kills += 1;
-        cancelDragIfPressed(target);
+    if (victim.hp <= 0) {
+        victim.alive = false;
+        victim.moneyDart = null;
+        if (typeof clearCloneDecoysForCaster === "function") clearCloneDecoysForCaster(victim.id);
+        target.gainSoul?.(victim, target.soulDeathGainSteps);
+        if (attacker && attacker !== victim) attacker.kills += 1;
+        target.cancelDragIfPressed?.(victim);
 
         // === 關鍵修改：動態判定 AI 專屬死亡音效 ===
         let playedCustomSound = false;
-        if (target.controlMode && aiProfiles[target.controlMode]) {
-          const profile = aiProfiles[target.controlMode];
+        if (victim.controlMode && target.aiProfiles?.[victim.controlMode]) {
+          const profile = target.aiProfiles[victim.controlMode];
           if (profile.deathSound) {
             const vol = profile.deathVolume !== undefined ? profile.deathVolume : 1;
-            playSound(profile.deathSound, vol);
+            target.playSound?.(profile.deathSound, vol);
             playedCustomSound = true;
           }
         }
         // 如果不是 AI，或者該 AI 沒有設定自訂音效，就維持播放原本的 "death"
         if (!playedCustomSound) {
-          playSound("death");
+          target.playSound?.("death");
         }
         // =======================================
 
         // ===== 新增：觸發死亡動畫 =====
-        if (!state.deathAnimations) state.deathAnimations = [];
-        state.deathAnimations.push({
-          x: target.x,
-          y: target.y,
+        if (state) {
+          if (!state.deathAnimations) state.deathAnimations = [];
+          state.deathAnimations.push({
+          x: victim.x,
+          y: victim.y,
           startedAt: performance.now(),
           // 29 幀 * 每幀 40 毫秒 = 1160 毫秒
           duration: 29 * 100 
-        });
+          });
+        }
         // ============================
 
-        setMessage(`${target.name} 被擊倒。`);
-        checkVictory();
+        target.setMessage?.(`${victim.name} 被擊倒。`);
+        target.checkVictory?.();
       }
       return damage;
     }
@@ -216,6 +221,7 @@ export function installCombatGlobals(target = globalThis) {
     markWeaponUsed: markWeaponUsedRuntime,
     isSteelDefenseActive: isSteelDefenseActiveRuntime,
     isHotBloodActive: isHotBloodActiveRuntime,
+    isMagicWaterActive: isMagicWaterActiveRuntime,
     unitWeaponDamage: unitWeaponDamageRuntime,
     defendedDamage: defendedDamageRuntime,
     weaponAreaCells: weaponAreaCellsRuntime,
@@ -237,6 +243,9 @@ export function installCombatGlobals(target = globalThis) {
     attackAimedWeapon,
     weaponIsReady: weaponIsReadyRuntime,
     markWeaponUsed: markWeaponUsedRuntime,
+    isSteelDefenseActive: isSteelDefenseActiveRuntime,
+    isHotBloodActive: isHotBloodActiveRuntime,
+    isMagicWaterActive: isMagicWaterActiveRuntime,
     unitWeaponDamage: unitWeaponDamageRuntime,
     defendedDamage: defendedDamageRuntime,
     weaponAreaCells: weaponAreaCellsRuntime,

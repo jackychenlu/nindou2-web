@@ -27,17 +27,11 @@ export function installBattleRuntimeGlobals(target = globalThis) {
 
   const updateMatchState = (currentNow) => {
     const state = resolveRuntimeState(target);
-    if (!state || state.matchStart || state.result) return;
-    if (!state.countdownStart) state.countdownStart = currentNow;
-    if (currentNow - state.countdownStart >= target.countdownTotalMs) {
-      state.matchStart = state.countdownStart + target.countdownTotalMs;
-      state.lastFrame = currentNow;
-      if (!state.startSoundPlayed) {
-        target.playSound("gameStarted");
-        state.startSoundPlayed = true;
-      }
-      target.setMessage("開始。");
-    }
+    if (!state || state.inRoom || state.matchStart || state.result) return;
+    state.matchStart = currentNow;
+    state.lastFrame = currentNow;
+    state.startSoundPlayed = true;
+    target.setMessage("開始。");
   };
 
   const isMatchActive = () => {

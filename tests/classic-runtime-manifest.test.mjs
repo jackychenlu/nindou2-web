@@ -18,12 +18,9 @@ test("classic runtime manifest has no duplicate script paths", () => {
 });
 
 test("rule script subsets are ordered and composable", () => {
-  assert.deepEqual(CORE_RULE_SCRIPT_PATHS, [
-    "scripts/data/config.js",
-    "scripts/data/rule-modes.js",
-  ]);
-  assert.equal(COMBAT_RULE_SCRIPT_PATHS.includes("scripts/systems/combat.js"), true);
-  assert.equal(AI_RULE_SCRIPT_PATHS.at(-1), "scripts/systems/combat.js");
+  assert.deepEqual(CORE_RULE_SCRIPT_PATHS, []);
+  assert.deepEqual(COMBAT_RULE_SCRIPT_PATHS, []);
+  assert.deepEqual(AI_RULE_SCRIPT_PATHS, []);
 });
 
 test("ai subset extends combat subset", () => {

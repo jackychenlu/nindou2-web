@@ -49,7 +49,7 @@ const SYSTEM_SECTION_DEFS = [
   },
   {
     key: "consumables",
-    warning: "Consumables module probe is out of sync with legacy consumable helpers.",
+    warning: "Consumables module probe is out of sync with installed consumable globals.",
     globalName: "NindouConsumables",
     summarize: summarizeConsumableHelpers,
   },

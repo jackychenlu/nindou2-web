@@ -1,4 +1,4 @@
-import { defaultBattleBgmSrc } from "../data/assets.module.mjs";
+import { defaultBattleBgmSrc, soundVolumeMultipliers } from "../data/assets.module.mjs";
 
 export function currentBattleBgmSrc(mapDefinition = {}) {
   return mapDefinition?.battleBgmSrc || defaultBattleBgmSrc;
@@ -40,17 +40,23 @@ export function applyMusicVolume({ roomBgm, battleBgmsBySrc = {}, value } = {}) 
 
 export function applySfxVolume({ sounds = {}, value } = {}) {
   const volume = Number(value) / 100;
-  Object.values(sounds).forEach((sound) => {
-    sound.volume = volume;
+  Object.entries(sounds).forEach(([key, sound]) => {
+    sound.volume = volume * (soundVolumeMultipliers[key] ?? 1);
   });
   return volume;
 }
 
-export function playSound(sounds = {}, key) {
+function soundVolumeMultiplier(options = {}) {
+  if (Number.isFinite(options)) return options;
+  if (Number.isFinite(options?.volumeMultiplier)) return options.volumeMultiplier;
+  return 1;
+}
+
+export function playSound(sounds = {}, key, options = {}) {
   const sound = sounds[key];
   if (!sound) return null;
   const instance = sound.cloneNode();
-  instance.volume = sound.volume;
+  instance.volume = sound.volume * soundVolumeMultiplier(options);
   instance.play().catch(() => {});
   return instance;
 }
@@ -97,8 +103,9 @@ export function summarizeAudioHelpers(legacy = {}) {
   const roomBgm = makeAudio(false);
   const battleA = makeAudio(false);
   const battleB = makeAudio(true);
-  const sounds = { breakVase: makeAudio(true), missingVolume: makeAudio(true) };
+  const sounds = { breakVase: makeAudio(true), shopMoveItem: makeAudio(true), missingVolume: makeAudio(true) };
   const modulePlayed = playSound(sounds, "breakVase");
+  const quieterPlayed = playSound(sounds, "breakVase", { volumeMultiplier: 0.7 });
   const moduleResult = {
     roomActive: activeBgmKey({ stateLike: { inRoom: true }, mapDefinition }),
     battleActive: activeBgmKey({ stateLike: { inRoom: false }, mapDefinition }),
@@ -108,7 +115,9 @@ export function summarizeAudioHelpers(legacy = {}) {
     battleAPaused: battleA.paused,
     musicVolume: applyMusicVolume({ roomBgm, battleBgmsBySrc: { battleA, battleB }, value: 35 }),
     sfxVolume: applySfxVolume({ sounds, value: 40 }),
+    shopMoveItemVolume: sounds.shopMoveItem.volume,
     playedVolume: modulePlayed?.volume,
+    quieterPlayedVolume: quieterPlayed?.volume,
     missingSound: playSound(sounds, "missing") === null,
     vaseSound: breakSoundKey({ type: "vase" }),
     chestSound: breakSoundKey({ type: "chest" }),

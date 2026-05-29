@@ -48,8 +48,8 @@ export function installAudioGlobals(target = globalThis) {
       applySfxVolume({ sounds: target.sounds, value: target.sfxVolumeInput.value });
     }
   };
-  const playSound = (key) => playSoundFromMap(target.sounds, key);
-  const playBreakSound = (object) => playSound(breakSoundKey(object));
+  const playSound = (key, options = {}) => playSoundFromMap(target.sounds, key, options);
+  const playBreakSound = (object, options = {}) => playSound(breakSoundKey(object), options);
 
   Object.assign(target, {
     currentBattleBgm,
@@ -85,8 +85,9 @@ export function installAudioGlobals(target = globalThis) {
       const roomBgm = makeAudio(false);
       const battleA = makeAudio(false);
       const battleB = makeAudio(true);
-      const sounds = { breakVase: makeAudio(true), missingVolume: makeAudio(true) };
+      const sounds = { breakVase: makeAudio(true), shopMoveItem: makeAudio(true), missingVolume: makeAudio(true) };
       const played = playSoundFromMap(sounds, "breakVase");
+      const quieterPlayed = playSoundFromMap(sounds, "breakVase", { volumeMultiplier: 0.7 });
       return {
         roomActive: activeBgmKey({ stateLike: { inRoom: true }, mapDefinition }),
         battleActive: activeBgmKey({ stateLike: { inRoom: false }, mapDefinition }),
@@ -96,7 +97,9 @@ export function installAudioGlobals(target = globalThis) {
         battleAPaused: battleA.paused,
         musicVolume: applyMusicVolume({ roomBgm, battleBgmsBySrc: { battleA, battleB }, value: 35 }),
         sfxVolume: applySfxVolume({ sounds, value: 40 }),
+        shopMoveItemVolume: sounds.shopMoveItem.volume,
         playedVolume: played?.volume,
+        quieterPlayedVolume: quieterPlayed?.volume,
         missingSound: playSoundFromMap(sounds, "missing") === null,
         vaseSound: breakSoundKey({ type: "vase" }),
         chestSound: breakSoundKey({ type: "chest" }),

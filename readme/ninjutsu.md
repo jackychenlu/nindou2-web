@@ -36,11 +36,11 @@
 
 目前 editor 與上排已選忍術框圖規則：
 
-- 攻擊系統一用 `assets/ninju/buttons/1.png`
-- 輔助系統一用 `assets/ninju/buttons/2.png`
-- 特殊系統一用 `assets/ninju/buttons/3.png`
-- 回復系統一用 `assets/ninju/buttons/4.png`
-- 變身系統一用 `assets/ninju/buttons/5.png`
+- 攻擊系統一用 `assets/ninju/buttons/1.webp`
+- 輔助系統一用 `assets/ninju/buttons/2.webp`
+- 特殊系統一用 `assets/ninju/buttons/3.webp`
+- 回復系統一用 `assets/ninju/buttons/4.webp`
+- 變身系統一用 `assets/ninju/buttons/5.webp`
 - 上排 `ninju-slot-choice` 與下排 `ninju-option` 都跟著 `editorRow` 套同一套框，不要再只對個別忍術寫死。
 
 ---

@@ -34,7 +34,7 @@ test("installAppBootstrapGlobals wires startup helpers and room inventory callba
   const shopItems = [elementStub()];
   const shopSlots = [elementStub(), elementStub()];
   const calls = [];
-  const state = { deathModeKey: "death_heal" };
+  const state = { deathModeKey: "death_heal", inRoom: true };
   const target = {
     document: {
       querySelector: (selector) => elements.get(selector) || null,
@@ -97,5 +97,52 @@ test("installAppBootstrapGlobals wires startup helpers and room inventory callba
   assert.equal(state.deathModeKey, "death_command");
   await target.startGameApp();
   assert.equal(state.onRoomInventoryChanged, target.renderRoomShopBag);
+  assert.equal(target.areGameAssetsReady(), true);
+  assert.equal(await target.whenGameAssetsReady(), true);
+  assert.equal(calls.filter((call) => call === "loadImages").length, 1);
   assert.deepEqual(calls.slice(-6), ["loadImages", "ruleUi", "deathUi", "mapUi", "volume", "reset", "bgm", "startDrawLoop"].slice(-6));
+});
+
+test("installAppBootstrapGlobals does not reset a battle that starts while images load", async () => {
+  let resolveImages;
+  const state = { deathModeKey: "death_heal", inRoom: true };
+  const calls = [];
+  const target = {
+    document: {
+      querySelector: () => null,
+      querySelectorAll: () => [],
+    },
+    window: elementStub(),
+    NindouRuntimeState: {
+      getState: () => state,
+    },
+    setupRuleModeSelect: () => {},
+    setupDeathModeSelect: () => {},
+    setupWeaponSelects: () => {},
+    setupControlSelects: () => {},
+    setupHpInputs: () => {},
+    setupSkillInputs: () => {},
+    setupRoomSlots: () => {},
+    applyRoomLanguage: () => {},
+    loadImages: () => new Promise((resolve) => {
+      resolveImages = resolve;
+    }),
+    updateRuleModeUi: () => calls.push("ruleUi"),
+    updateDeathModeUi: () => calls.push("deathUi"),
+    updateRoomMapUi: () => calls.push("mapUi"),
+    applyVolumeControls: () => calls.push("volume"),
+    resetGame: () => calls.push("reset"),
+    startBgm: () => calls.push("bgm"),
+    startDrawLoop: () => calls.push("startDrawLoop"),
+  };
+
+  installAppBootstrapGlobals(target);
+
+  const started = target.startGameApp();
+  state.inRoom = false;
+  resolveImages();
+  await started;
+
+  assert.equal(calls.includes("reset"), false);
+  assert.equal(calls.includes("startDrawLoop"), true);
 });

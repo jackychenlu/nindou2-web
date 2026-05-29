@@ -1,5 +1,17 @@
 const NINJU_LOADOUT_STORAGE_KEY = "nindou2.ninjuLoadout";
 const ROOM_SKILL_INPUT_MAX = 9999;
+const DEFAULT_ROOM_ITEM_SLOTS = [
+  "backup3",
+  "backup3",
+  "backup3",
+  "backup3",
+  "backup3",
+  "magicWater",
+  "magicWater",
+  "magicWater",
+  "magicWater",
+  "magicWater",
+];
 
 function query(target, selector) {
   return target.document?.querySelector?.(selector) || null;
@@ -66,7 +78,7 @@ export function installGameGlobals(target = globalThis) {
     cloneDecoys: [],
     ruleModeKey: "original",
     deathModeKey: "death_heal",
-    roomItemSlots: [],
+    roomItemSlots: [...DEFAULT_ROOM_ITEM_SLOTS],
     onRoomInventoryChanged: null,
   };
 
@@ -99,7 +111,6 @@ export function installGameGlobals(target = globalThis) {
       target.drawGameHud?.();
       target.drawNinjuBar?.();
       target.drawFrame?.();
-      target.drawCountdownOverlay?.(frameNow);
       target.drawResultOverlay?.();
       target.updatePanel?.();
     } catch (error) {

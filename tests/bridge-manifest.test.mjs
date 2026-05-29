@@ -14,7 +14,6 @@ test("config bridge entry uses marker-patch generator", () => {
   assert.ok(configEntry);
   assert.equal(typeof configEntry.generate, "function");
   assert.equal(configEntry.runScriptName, "sync:config-nindou");
-  assert.equal(configEntry.classicRelativePath, "scripts/data/config.js");
 });
 
 test("every bridge entry has executable sync shape", () => {

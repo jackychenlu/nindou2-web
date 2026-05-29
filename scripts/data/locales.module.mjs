@@ -124,6 +124,7 @@ export const roomLocaleText = {
   defaultLookOption: "預設外觀",
   redLookOption: "赤組",
   zhaohuoLookOption: "趙活",
+  xiahoulanLookOption: "夏侯蘭",
   ninjuSeries: "忍術系別",
   healSeries: "回復系",
   supportSeries: "輔助系",

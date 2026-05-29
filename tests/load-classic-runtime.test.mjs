@@ -4,7 +4,6 @@ import assert from "node:assert/strict";
 import {
   CLASSIC_RUNTIME_BUNDLE_PATH,
   loadClassicRuntime,
-  loadClassicRuntimeScripts,
 } from "../scripts/load-classic-runtime.module.mjs";
 import { CLASSIC_RUNTIME_SCRIPT_PATHS } from "../scripts/classic-runtime-manifest.module.mjs";
 
@@ -74,19 +73,6 @@ test("loadClassicRuntime ignores fallback when runtime manifest is empty", async
     assert.equal(result.mode, "none");
     assert.deepEqual(result.loaded, CLASSIC_RUNTIME_SCRIPT_PATHS);
     assert.deepEqual(fakeDocument.loaded, []);
-  } finally {
-    global.document = previousDocument;
-  }
-});
-
-test("loadClassicRuntimeScripts can still load explicit legacy script lists", async () => {
-  const previousDocument = global.document;
-  const fakeDocument = makeFakeDocument();
-  global.document = fakeDocument;
-  try {
-    const explicitPaths = ["scripts/data/config.js", "scripts/data/rule-modes.js"];
-    await loadClassicRuntimeScripts(explicitPaths);
-    assert.deepEqual(fakeDocument.loaded, explicitPaths);
   } finally {
     global.document = previousDocument;
   }

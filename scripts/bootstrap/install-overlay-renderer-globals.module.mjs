@@ -9,34 +9,6 @@ function canvasContext(target) {
 }
 
 export function installOverlayRendererGlobals(target = globalThis) {
-  const countdownStep = (elapsed) => {
-    if (elapsed < 500) return { text: target.localizedCountdownText(3), color: "#fff1a8" };
-    if (elapsed < 1000) return { text: target.localizedCountdownText(2), color: "#fff1a8" };
-    if (elapsed < 1500) return { text: target.localizedCountdownText(1), color: "#fff1a8" };
-    if (elapsed < target.countdownTotalMs) return { text: target.localizedCountdownText(0), color: "#ffea4d" };
-    return null;
-  };
-
-  const drawCountdownOverlay = (currentNow) => {
-    const state = resolveRuntimeState(target);
-    const { canvas, ctx } = canvasContext(target);
-    if (!state || !canvas || !ctx || state.result || state.matchStart || !state.countdownStart) return;
-    const elapsed = currentNow - state.countdownStart;
-    const step = countdownStep(elapsed);
-    if (!step) return;
-
-    ctx.save();
-    ctx.fillStyle = "rgba(0, 0, 0, .18)";
-    ctx.fillRect(target.grid.left, target.grid.top, target.grid.cols * target.grid.cell, target.grid.rows * target.grid.cell);
-    const startText = target.localizedCountdownText(0);
-    const shake = step.text === startText ? Math.sin(currentNow / 35) * 8 : 0;
-    const scale = step.text === startText ? 1 + Math.sin(currentNow / 70) * 0.06 : 1;
-    ctx.translate(canvas.width / 2 + shake, target.grid.top + target.grid.rows * target.grid.cell / 2 - 16);
-    ctx.scale(scale, scale);
-    target.drawOutlinedText(step.text, 0, 0, step.text === startText ? 76 : 96, step.color, "center");
-    ctx.restore();
-  };
-
   const drawResultRow = (values, y, header = false, team = "") => {
     const { ctx } = canvasContext(target);
     if (!ctx) return;
@@ -91,15 +63,11 @@ export function installOverlayRendererGlobals(target = globalThis) {
   };
 
   Object.assign(target, {
-    drawCountdownOverlay,
-    countdownStep,
     drawResultOverlay,
     drawResultRow,
   });
 
   target.NindouOverlayRenderer = {
-    drawCountdownOverlay,
-    countdownStep,
     drawResultOverlay,
     drawResultRow,
   };

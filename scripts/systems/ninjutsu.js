@@ -355,6 +355,10 @@ function isHotBloodActive(unit) {
   return Boolean(unit && unit.hotBloodUntil && performance.now() < unit.hotBloodUntil);
 }
 
+function isMagicWaterActive(unit) {
+  return Boolean(unit && unit.magicWaterUntil && performance.now() < unit.magicWaterUntil);
+}
+
 function refreshStatusNinju(unit, type, now = performance.now()) {
   if (isAttackNinjuType(type)) {
     triggerAttackNinju(unit, type, unit.ninju?.attackNinjuLevel || 0, now);
@@ -529,6 +533,7 @@ function makeCloneDecoy(caster, cell, now = performance.now()) {
     appearanceKey: caster.appearanceKey || "default",
     steelUntil: caster.steelUntil || 0,
     hotBloodUntil: caster.hotBloodUntil || 0,
+    magicWaterUntil: caster.magicWaterUntil || 0,
     buffAuraType: caster.buffAuraType || "",
     facing: "down",
     createdAt: now,
@@ -583,7 +588,9 @@ function isHealNinjuType(type) {
 }
 
 function defendedDamage(unit, baseDamage) {
-  return isSteelDefenseActive(unit) ? baseDamage / steelRule().defenseMultiplier : baseDamage;
+  const steelMultiplier = isSteelDefenseActive(unit) ? steelRule().defenseMultiplier : 1;
+  const magicWaterMultiplier = isMagicWaterActive(unit) ? 2 : 1;
+  return baseDamage / Math.min(2, Math.max(steelMultiplier, magicWaterMultiplier));
 }
 
 function playStatusEnergyUpSequence() {

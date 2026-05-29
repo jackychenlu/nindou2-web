@@ -40,15 +40,27 @@ export function isHotBloodActive(unit, options = {}) {
   return Boolean(unit && unit.hotBloodUntil && currentTime(options) < unit.hotBloodUntil);
 }
 
+export function isMagicWaterActive(unit, options = {}) {
+  return Boolean(unit && unit.magicWaterUntil && currentTime(options) < unit.magicWaterUntil);
+}
+
 export function unitWeaponDamage(unit, options = {}) {
   const weapon = weaponDefinitionByKey[unit.weaponKey] || weaponDefinitionByKey[defaultWeaponKey];
   if (!weapon) return weaponDamage;
   const baseDamage = weaponDamageForMode(weapon.key, weapon.damage ?? weaponDamage, options.stateLike || {});
-  return isHotBloodActive(unit, options) ? baseDamage * hotBloodRule(options.stateLike || {}).weaponDamageMultiplier : baseDamage;
+  const hotBloodMultiplier = isHotBloodActive(unit, options)
+    ? hotBloodRule(options.stateLike || {}).weaponDamageMultiplier
+    : 1;
+  const magicWaterMultiplier = isMagicWaterActive(unit, options) ? 2 : 1;
+  return baseDamage * Math.min(2, Math.max(hotBloodMultiplier, magicWaterMultiplier));
 }
 
 export function defendedDamage(unit, baseDamage, options = {}) {
-  return isSteelDefenseActive(unit, options) ? baseDamage / steelRule(options.stateLike || {}).defenseMultiplier : baseDamage;
+  const steelMultiplier = isSteelDefenseActive(unit, options)
+    ? steelRule(options.stateLike || {}).defenseMultiplier
+    : 1;
+  const magicWaterMultiplier = isMagicWaterActive(unit, options) ? 2 : 1;
+  return baseDamage / Math.min(2, Math.max(steelMultiplier, magicWaterMultiplier));
 }
 
 export function weaponAreaCells(attacker, dir, options = {}) {
@@ -210,7 +222,9 @@ export function runCombatHelperProbe() {
     readyB: weaponIsReady({ weaponReadyAt: 999999999 }, options),
     damageNormal: unitWeaponDamage({ weaponKey: "weapon4" }, options),
     damageHotBlood: unitWeaponDamage(attacker, options),
+    damageMagicWater: unitWeaponDamage({ weaponKey: "weapon4", magicWaterUntil: 999999999 }, options),
     defendedSteel: defendedDamage({ steelUntil: 999999999 }, 170, options),
+    defendedMagicWater: defendedDamage({ magicWaterUntil: 999999999 }, 170, options),
     defendedNormal: defendedDamage({ steelUntil: 0 }, 170, options),
     areaWide: weaponAreaCells(attacker, { name: "right", dx: 1, dy: 0 }, options),
     areaRing: weaponAreaCells({ ...attacker, weaponKey: "weapon8" }, { name: "up", dx: 0, dy: -1 }, options),

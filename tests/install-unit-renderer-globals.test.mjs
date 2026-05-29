@@ -61,7 +61,7 @@ function createTarget(state, calls = []) {
     weaponFrames: { weapon1: { hand: { down: [frame] } } },
     defaultWeaponKey: "weapon1",
     moneyDartPickupFrames: [frame],
-    moneyDartReadyFrames: { b: [frame, frame, frame, frame], g: [frame, frame, frame, frame] },
+    moneyDartReadyFrames: { b: [frame, frame, frame, frame], g: [frame, frame, frame, frame], zhaohuo: [{ id: "zr" }, { id: "zl" }, { id: "zu" }, { id: "zd" }] },
     moneyDartReadyOffsets: { down: { dx: 0, dy: 0 }, up: { dx: 0, dy: 0 }, left: { dx: 0, dy: 0 }, right: { dx: 0, dy: 0 } },
     moneyDartEyeOffsets: { down: { x: -2, y: 10, w: 4, h: 3 } },
     eyeOffsets: { down: { x: -2, y: 10, w: 4, h: 3 } },
@@ -119,4 +119,45 @@ test("activeBuffAuraType and money dart helpers keep classic behavior", () => {
   target.drawMoneyDartShootEye(unit, "down", { x: 10, y: 20 }, { w: 4, h: 3 });
 
   assert.equal(calls.some((call) => Array.isArray(call) && call[0] === "drawImage"), true);
+});
+
+test("sake4 aura stays hidden until buffAuraVisibleAt", () => {
+  const calls = [];
+  const state = { selectedId: 1, units: [], cloneDecoys: [] };
+  const target = createTarget(state, calls);
+  let now = 1000;
+  target.performance.now = () => now;
+  installUnitRendererGlobals(target);
+
+  const unit = { id: 1, team: "blue", facing: "down", buffAuraType: "sake4", moveSkillFreeUntil: 5000, buffAuraVisibleAt: 2500 };
+
+  assert.equal(target.activeBuffAuraType(unit), "");
+  now = 2600;
+  assert.equal(target.activeBuffAuraType(unit), "sake4");
+});
+
+test("magicWater aura stays purple while using the same timed buff window", () => {
+  const calls = [];
+  const state = { selectedId: 1, units: [], cloneDecoys: [] };
+  const target = createTarget(state, calls);
+  let now = 1000;
+  target.performance.now = () => now;
+  installUnitRendererGlobals(target);
+
+  const unit = { id: 1, team: "blue", facing: "down", buffAuraType: "magicWater", moveSkillFreeUntil: 5000, buffAuraVisibleAt: 2500 };
+
+  assert.equal(target.activeBuffAuraType(unit), "");
+  now = 2600;
+  assert.equal(target.activeBuffAuraType(unit), "magicWater");
+});
+
+test("money dart ready frame follows zhaohuo appearance set", () => {
+  const calls = [];
+  const state = { selectedId: 1, units: [], cloneDecoys: [] };
+  const target = createTarget(state, calls);
+  target.unitLookDefinition = () => ({ spriteSet: "zhaohuo", moneyDartReadySet: "zhaohuo", drawEyes: false });
+  installUnitRendererGlobals(target);
+
+  const unit = { id: 1, team: "blue", appearanceKey: "zhaohuo", facing: "down" };
+  assert.equal(target.moneyDartReadyFrame("down", unit), target.moneyDartReadyFrames.zhaohuo[3]);
 });

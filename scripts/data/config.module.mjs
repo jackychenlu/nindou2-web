@@ -1,18 +1,20 @@
 // Keep this module small while the runtime still uses classic scripts.
 export const grid = {
-  cols: 22,
-  rows: 12,
-  cell: 44.5,
-  left: -9,
-  top: 5,
+  cols: 22, //地圖左右共22格，外圍2圈不可走，所以左右玩家可走18格
+  rows: 12, //地圖上下共12格，外圍1圈不可走，所以上下玩家可走10格
+  cell: 44.5, //每格的像素大小
+  left: -9, //第 0 欄格子的畫面左邊起點，往左偏移 9 px
+  top: 5, //第 0 列格子的畫面上邊起點，往下偏移 5 px
 };
+
+// 覺得整張地圖圖片邊緣怪怪的、背景圖太滿或有白邊/黑邊，通常才調 battleMapDrawInset
 export const battleMapDrawInset = {
   left: 5,
   top: 5,
   right: 5,
   bottom: 5,
 };
-export const defaultRoomMapKey = "country-10";
+export const defaultRoomMapKey = "country-10"; //預設地圖
 export const roomMapDefinitions = {
   "country-10": {
     label: "鄉野之十",
@@ -32,7 +34,7 @@ export const roomMapDefinitions = {
     coordinateBottomInternalY: 11,
     playableInternalYMin: 2,
     playableInternalYMax: 11,
-    blockedDisplayCells: ["1,1", "18,1", "1,10", "18,10", "1,18", "18,18"],
+    blockedDisplayCells: ["1,1", "18,1", "1,10", "18,10"],
     startingDisplayCellsBySlot: {
       blue: {
         1: { x: 9, y: 3 },
@@ -57,8 +59,8 @@ export const roomMapDefinitions = {
     coordinateBottomInternalY: 11,
     playableInternalYMin: 2,
     playableInternalYMax: 11,
-    blockedDisplayCells: ["1,1", "18,1", "1,10", "18,10", "1,18", "18,18"],
-    startingDisplayCellsBySlot: {
+    blockedDisplayCells: ["1,1", "18,1", "1,10", "18,10"],
+    startingDisplayCellsBySlot: { //玩家出生起始點
       blue: {
         1: { x: 9, y: 3 },
         2: { x: 8, y: 1 },
@@ -91,9 +93,9 @@ export const playerUnitId = 1;
 export const unitsPerTeam = 3;
 export const aiSkillRegenPerSecond = 0.42;
 export const maxHp = 300;
-export const collisionDamage = 40;
+export const collisionDamage = 40; //撞擊傷害
 export const ARRIVE_FRAME_MS = 65;
-export const ARRIVE_TOTAL = ARRIVE_FRAME_MS * 5;
+export const ARRIVE_TOTAL = ARRIVE_FRAME_MS * 5; //移動僵直為0.065*5=0.325秒
 export const PREARRIVE_FRAME_MS = 70;
 export const PREARRIVE_TOTAL = PREARRIVE_FRAME_MS * 2;
 export const soulStepsPerLevel = 27;
@@ -191,10 +193,10 @@ export const ninjutsuRuleProfiles = {
       hitDisableMs: 3500,
     },
     death: {
-      cost: 7,
+      cost: 0,
       castDurationMs: 1500,
-      hitChance: 0.6,
-      damage: 50,
+      hitChance: 0.1,
+      damage: 9999,
       missDisableMs: 1500,
       hitDisableMs: 3500,
     },
@@ -236,8 +238,8 @@ export const ninjutsuRuleProfiles = {
     moneyDart: {
       cost: 0,
       damage: 100,
-      readyMs: 250,
-      postThrowNinjuLockMs: 250,
+      readyMs: 200,
+      postThrowNinjuLockMs: 200,
     },
     steel: {
       cost: 6,
@@ -289,15 +291,15 @@ export const ninjutsuRuleProfiles = {
       hitDisableMs: 3500,
     },
     death: {
-      cost: 7,
+      cost: 0,
       castDurationMs: 1500,
-      hitChance: 0.6,
-      damage: 50,
+      hitChance: 0.1,
+      damage: 9999,
       missDisableMs: 1500,
       hitDisableMs: 3500,
     },
     freeze: {
-      cost: 7,
+      cost: 0,
       castDurationMs: 1500,
       hitChance: 0.35,
       damage: 50,
@@ -305,18 +307,18 @@ export const ninjutsuRuleProfiles = {
       hitDisableMs: 10000,
     },
     angel: {
-      cost: 7,
-      castDurationMs: 1720,
-      hitChance: 0.6,
-      damage: 100,
+      cost: 0,
+      castDurationMs: 1500,
+      hitChance: 0.5,
+      damage: 50,
       missDisableMs: 1500,
       hitDisableMs: 3500,
     },
     mouryo: {
-      cost: 7,
-      castDurationMs: 1720,
-      hitChance: 0.6,
-      damage: 145,
+      cost: 0,
+      castDurationMs: 1500,
+      hitChance: 0.5,
+      damage: 50,
       missDisableMs: 1500,
       hitDisableMs: 3500,
     },

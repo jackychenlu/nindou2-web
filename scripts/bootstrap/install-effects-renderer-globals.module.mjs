@@ -15,12 +15,21 @@ function now(target) {
 export function installEffectsRendererGlobals(target = globalThis) {
   const consumableEffectFrames = (type) => {
     if (type === "regen_sp") return target.consumableRegenSpFrames;
+    if (type === "magic_water") return target.consumableMagicWaterFrames;
     return [];
+  };
+
+  const consumableEffectFrameGroups = (type) => {
+    const frames = consumableEffectFrames(type);
+    if (type === "magic_water") return [frames, target.consumableMagicWaterEffectFrames || []];
+    return [frames];
   };
 
   const ninjuCastFrames = (type, unit = null) => {
     if (type === "clone") {
       if (unit?.controlMode === "ai_red" || unit?.appearanceKey === "red") return target.cloneRedNinjuFrames;
+      if (unit?.appearanceKey === "zhaohuo") return target.cloneZhaohuoNinjuFrames;
+      if (unit?.appearanceKey === "xiahoulan") return target.cloneZhaohuoNinjuFrames;
       if (unit?.team === "grey") return target.cloneGreyNinjuFrames;
       return target.cloneNinjuFrames;
     }
@@ -68,7 +77,8 @@ export function installEffectsRendererGlobals(target = globalThis) {
     for (let i = state.consumableEffects.length - 1; i >= 0; i--) {
       const effect = state.consumableEffects[i];
       const elapsed = currentNow - effect.startedAt;
-      const frames = consumableEffectFrames(effect.type);
+      const frameGroups = consumableEffectFrameGroups(effect.type);
+      const frames = frameGroups.find((group) => group.length > 0) || [];
       if (elapsed >= effect.duration || frames.length === 0) {
         state.consumableEffects.splice(i, 1);
         continue;
@@ -78,44 +88,49 @@ export function installEffectsRendererGlobals(target = globalThis) {
         state.consumableEffects.splice(i, 1);
         continue;
       }
-      const progress = Math.min(0.999, elapsed / effect.duration);
-      const frame = frames[Math.floor(progress * frames.length)];
-      if (!frame) continue;
+      const frameIndex = effect.frameDurationMs
+        ? Math.floor(elapsed / effect.frameDurationMs)
+        : Math.floor(Math.min(0.999, elapsed / effect.duration) * frames.length);
       const p = target.unitPosition(unit);
       ctx.save();
       ctx.globalAlpha = 0.9;
-      ctx.drawImage(frame, p.x - 46, p.y - 68, 92, 92);
+      for (const group of frameGroups) {
+        const frame = group[frameIndex];
+        if (frame) ctx.drawImage(frame, p.x - 46, p.y - 68, 92, 92);
+      }
       ctx.restore();
     }
   };
 
-  function drawNinjuDamageEffects(now) {
-    if (!state.ninjuDamageEffects) return;
+  function drawNinjuDamageEffects(currentNow) {
+    const state = resolveRuntimeState(target);
+    const { ctx } = canvasContext(target);
+    if (!state?.ninjuDamageEffects || !ctx) return;
     for (let i = state.ninjuDamageEffects.length - 1; i >= 0; i--) {
       const effect = state.ninjuDamageEffects[i];
       
       // 1. 如果設定的時間還沒到（例如還沒到 1.5 秒），就先跳過不處理
-      if (now < effect.startedAt) continue;
+      if (currentNow < effect.startedAt) continue;
 
       // 🎯 2. 核心加入點：時間到了，動畫正要顯示在螢幕上的那一刻，播放對應音效！
       if (!effect.soundPlayed) {
         if (effect.type === "flashMiss") {
-          playSound("fail");      // 替換成你揮空/Miss的音效名稱
+          target.playSound?.("fail");      // 替換成你揮空/Miss的音效名稱
         } 
         else if (effect.type === "flashHit") {
-          playSound("abc");   // 替換成你命中身體的音效名稱
+          target.playSound?.("abc");   // 替換成你命中身體的音效名稱
         } 
         else if (effect.type === "flashHitHead") {
-          playSound("dizzy");   // 替換成你命中頭部的音效名稱
+          target.playSound?.("dizzy");   // 替換成你命中頭部的音效名稱
         } 
   		else if (effect.type === "wildfireMiddleHitHead") {
-  		  playSound("dizzy");   // 替換成你命中頭部的音效名稱
+  		  target.playSound?.("dizzy");   // 替換成你命中頭部的音效名稱
   	  } 
   		else if (effect.type === "deathBigHitHead") {
-  		  playSound("dizzy");   // 替換成你命中頭部的音效名稱
+  		  target.playSound?.("dizzy");   // 替換成你命中頭部的音效名稱
   	  } 
   		else if (effect.type === "deathNinjuSuccess") {
-  		  playSound("success");   // 替換成你命中頭部的音效名稱
+  		  target.playSound?.("success");   // 替換成你命中頭部的音效名稱
         }
         
         // 標記為已播放，防止下一幀 (FPS) 重複觸發播放
@@ -123,7 +138,7 @@ export function installEffectsRendererGlobals(target = globalThis) {
       }
 
       const frames = ninjuDamageFrames(effect.type);
-      const elapsed = now - effect.startedAt;
+      const elapsed = currentNow - effect.startedAt;
       if (elapsed >= effect.duration || frames.length === 0) {
         state.ninjuDamageEffects.splice(i, 1);
         continue;
@@ -132,8 +147,10 @@ export function installEffectsRendererGlobals(target = globalThis) {
       const progress = Math.min(0.999, elapsed / frameDuration);
       const frame = frames[Math.floor(progress * frames.length)];
       if (!frame) continue;
-      const target = state.units.find((unit) => unit.id === effect.targetId);
-      const p = target && (target.alive || target.respawning) ? unitPosition(target) : effect.at;
+      const effectTarget = state.units.find((unit) => unit.id === effect.targetId);
+      const p = effectTarget && (effectTarget.alive || effectTarget.respawning)
+        ? target.unitPosition(effectTarget)
+        : effect.at;
       const placement = ninjuDamageEffectPlacement(effect.type);
       ctx.save();
       ctx.globalAlpha = 0.9;
@@ -143,12 +160,15 @@ export function installEffectsRendererGlobals(target = globalThis) {
   }
 
   // ===== Rendering: Ninjutsu Effects =====
-  function drawNinjuEffects(now) {
+  function drawNinjuEffects(currentNow) {
+    const state = resolveRuntimeState(target);
+    const { ctx } = canvasContext(target);
+    if (!state?.units || !ctx) return;
     for (const unit of state.units) {
       if (!unit.alive) continue;
-      const p = unitPosition(unit);
-      if (isUnitCastingNinju(unit)) {
-        const progress = Math.min(0.999, (now - unit.ninju.startedAt) / unit.ninju.duration);
+      const p = target.unitPosition(unit);
+      if (target.isUnitCastingNinju?.(unit)) {
+        const progress = Math.min(0.999, (currentNow - unit.ninju.startedAt) / unit.ninju.duration);
         const frames = ninjuCastFrames(unit.ninju.type, unit);
         const frame = frames[Math.floor(progress * frames.length)];
         if (frame) {
@@ -156,7 +176,7 @@ export function installEffectsRendererGlobals(target = globalThis) {
           ctx.globalAlpha = 0.85;
           
           // 1. 取得該忍術的完整設定檔 (可能有攻擊類或特殊類)
-          const config = attackNinjuConfigs[unit.ninju.type] || specialNinjuConfigs[unit.ninju.type];
+          const config = target.attackNinjuConfigs[unit.ninju.type] || target.specialNinjuConfigs[unit.ninju.type];
           const size = config?.castSize || 92;
 
           // 2. 判斷有沒有自訂的 castBox
@@ -179,8 +199,8 @@ export function installEffectsRendererGlobals(target = globalThis) {
         }
       }
     }
-    drawConsumableEffects(now);
-    drawNinjuDamageEffects(now);
+    drawConsumableEffects(currentNow);
+    drawNinjuDamageEffects(currentNow);
   }
 
 
@@ -203,6 +223,7 @@ export function installEffectsRendererGlobals(target = globalThis) {
     drawNinjuEffects,
     drawConsumableEffects,
     consumableEffectFrames,
+    consumableEffectFrameGroups,
     ninjuCastFrames,
     drawNinjuDamageEffects,
     ninjuDamageFrames,
@@ -214,6 +235,7 @@ export function installEffectsRendererGlobals(target = globalThis) {
     drawNinjuEffects,
     drawConsumableEffects,
     consumableEffectFrames,
+    consumableEffectFrameGroups,
     ninjuCastFrames,
     drawNinjuDamageEffects,
     ninjuDamageFrames,

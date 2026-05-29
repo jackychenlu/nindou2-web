@@ -66,6 +66,49 @@ test("installMovementGlobals installs side-effecting skill move flow", () => {
   assert.equal(calls.some((call) => call[0] === "sound" && call[1] === "move"), true);
 });
 
+test("installMovementGlobals gives 2/5 soul gain during sake4 free move", () => {
+  const calls = [];
+  const unit = {
+    id: "u1",
+    name: "青1",
+    team: "blue",
+    x: 5,
+    y: 5,
+    skill: 0,
+    alive: true,
+    kills: 0,
+    moveSkillFreeUntil: 16000,
+  };
+  const target = {
+    performance: { now: () => 1000 },
+    inside: (x, y) => x >= 0 && x < 12 && y >= 0 && y < 12,
+    unitAt: (x, y) => (unit.alive && unit.x === x && unit.y === y ? unit : null),
+    objectAt: () => null,
+    isPermanentObstacle: () => false,
+    isBlockedCell: () => false,
+    isUnitInvincible: () => false,
+    isUnitInNinjuGap: () => false,
+    isUnitCastingNinju: () => false,
+    canUnitMoveNow: () => true,
+    weaponIsReady: () => true,
+    isUnitDisabled: () => false,
+    isStraightMove: (from, to) => from && to && (from.x === to.x || from.y === to.y),
+    manhattan: (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y),
+    updateFacing: (actor, cell) => { actor.facing = cell.x > actor.x ? "right" : "left"; },
+    gainSoul: (actor, value) => calls.push(["soul", actor.id, value]),
+    playSound: (key) => calls.push(["sound", key]),
+    setMessage: (message) => calls.push(["message", message]),
+    ARRIVE_TOTAL: 260,
+  };
+
+  installMovementGlobals(target);
+  target.skillMove(unit, { x: 10, y: 5 });
+
+  assert.equal(unit.skill, 0);
+  assert.equal(unit.x, 10);
+  assert.equal(calls.some((call) => call[0] === "soul" && call[2] === 2), true);
+});
+
 test("installMovementGlobals keeps collision and respawn behavior on module side", () => {
   const calls = [];
   const mover = { id: "u1", name: "青1", team: "blue", x: 5, y: 5, skill: 4, alive: true, kills: 0 };

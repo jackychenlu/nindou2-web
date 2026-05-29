@@ -25,6 +25,7 @@ export function installNinjutsuGlobals(target = globalThis) {
       if (unit.ninju.phase === "active") {
         if (currentNow - unit.ninju.startedAt < unit.ninju.duration) continue;
         refreshStatusNinju(unit, unit.ninju.type, currentNow);
+        applyNinjuPendingConsumableEffects(unit, currentNow);
         const queuedNinjutsu = queuedNinjuActions(unit.ninju);
 
         if (queuedNinjutsu.length > 0) {
@@ -42,6 +43,7 @@ export function installNinjutsuGlobals(target = globalThis) {
             gapMoves: 0,
             pendingMoneyDart: unit.ninju.pendingMoneyDart,
             pendingConsumables: unit.ninju.pendingConsumables,
+            pendingConsumableEffects: [],
           };
           if (unit.id === target.playerUnitId) target.setMessage?.(`${unit.name}：忍術連段空檔中。`);
         } else if (unit.ninju.pendingMoneyDart) {
@@ -54,6 +56,7 @@ export function installNinjutsuGlobals(target = globalThis) {
             queue: 0,
             gapMoves: 0,
             pendingConsumables: unit.ninju.pendingConsumables,
+            pendingConsumableEffects: [],
           };
           if (unit.id === target.playerUnitId) target.setMessage?.(`${unit.name}：錢鏢接段空檔中。`);
         } else if (unit.ninju.pendingConsumables?.length) {
@@ -108,7 +111,7 @@ export function installNinjutsuGlobals(target = globalThis) {
     setQueuedNinjuActions(unit.ninju, actions);
   }
 
-  function startStatusNinjuActive(unit, action, currentNow, pendingNinjutsu = [], pendingMoneyDart = false, pendingConsumables = []) {
+  function startStatusNinjuActive(unit, action, currentNow, pendingNinjutsu = [], pendingMoneyDart = false, pendingConsumables = [], pendingConsumableEffects = []) {
     const type = action.type;
     unit.ninju = {
       type,
@@ -121,6 +124,7 @@ export function installNinjutsuGlobals(target = globalThis) {
       attackNinjuLevel: action.attackNinjuLevel || 0,
       pendingMoneyDart,
       pendingConsumables,
+      pendingConsumableEffects,
     };
     setQueuedNinjuActions(unit.ninju, pendingNinjutsu);
     playStatusNinjuSound(type);
@@ -204,7 +208,7 @@ export function installNinjutsuGlobals(target = globalThis) {
       return;
     }
 
-    unit.skill -= skillCost;
+    unit.skill = Math.max(0, unit.skill - skillCost);
     const currentNow = now(target);
     const action = ninjuActionEntry(type, attackNinjuLevel);
 
@@ -274,6 +278,22 @@ export function installNinjutsuGlobals(target = globalThis) {
       target.playSound?.("useNinju");
       target.clearDragState?.();
       target.setMessage?.(`${unit.name}：錢鏢已排到連段空檔。`);
+      return;
+    }
+    if (unit.consumableUse && !unit.ninju) {
+      if (unit.consumableUse.pendingMoneyDart || unit.consumableUse.nextType === "moneyDart") {
+        target.setMessage?.(`${unit.name} 已排入錢鏢。`);
+        return;
+      }
+      unit.skill -= rule.cost;
+      if (unit.consumableUse.phase === "gap") {
+        unit.consumableUse.nextType = "moneyDart";
+      } else {
+        unit.consumableUse.pendingMoneyDart = true;
+      }
+      target.playSound?.("useNinju");
+      target.clearDragState?.();
+      target.setMessage?.(`${unit.name} 已排入錢鏢，等待道具動作結束。`);
       return;
     }
     unit.skill -= rule.cost;
@@ -367,6 +387,13 @@ export function installNinjutsuGlobals(target = globalThis) {
     return Boolean(unit?.consumableUse?.phase === "active");
   }
 
+  function applyNinjuPendingConsumableEffects(unit, currentNow) {
+    const effects = unit?.ninju?.pendingConsumableEffects || [];
+    for (const effect of effects) {
+      target.applyPendingConsumableEffect?.(unit, effect, currentNow);
+    }
+  }
+
   function canUnitMoveNow(unit) {
     if (unit.moneyDart) return false;
     if (isUnitCastingNinju(unit)) return Boolean(unit.ninju && unit.ninju.chainMoves > 0);
@@ -400,6 +427,10 @@ export function installNinjutsuGlobals(target = globalThis) {
 
   function isHotBloodActive(unit) {
     return Boolean(unit && unit.hotBloodUntil && now(target) < unit.hotBloodUntil);
+  }
+
+  function isMagicWaterActive(unit) {
+    return Boolean(unit && unit.magicWaterUntil && now(target) < unit.magicWaterUntil);
   }
 
   function refreshStatusNinju(unit, type, currentNow = now(target)) {
@@ -607,6 +638,7 @@ export function installNinjutsuGlobals(target = globalThis) {
       appearanceKey: caster.appearanceKey || "default",
       steelUntil: caster.steelUntil || 0,
       hotBloodUntil: caster.hotBloodUntil || 0,
+      magicWaterUntil: caster.magicWaterUntil || 0,
       buffAuraType: caster.buffAuraType || "",
       facing: "down",
       createdAt: currentNow,
@@ -662,7 +694,9 @@ export function installNinjutsuGlobals(target = globalThis) {
   }
 
   function defendedDamage(unit, baseDamage) {
-      return isSteelDefenseActive(unit) ? baseDamage / steelRule().defenseMultiplier : baseDamage;
+      const steelMultiplier = isSteelDefenseActive(unit) ? steelRule().defenseMultiplier : 1;
+      const magicWaterMultiplier = isMagicWaterActive(unit) ? 2 : 1;
+      return baseDamage / Math.min(2, Math.max(steelMultiplier, magicWaterMultiplier));
     }
 
     function playStatusEnergyUpSequence() {
@@ -785,6 +819,7 @@ export function installNinjutsuGlobals(target = globalThis) {
     isUnitInNinjuGap,
     isSteelDefenseActive,
     isHotBloodActive,
+    isMagicWaterActive,
     refreshStatusNinju,
     triggerAttackNinju,
     attackNinjuOutcome,
@@ -822,6 +857,7 @@ export function installNinjutsuGlobals(target = globalThis) {
     isUnitInvincible,
     isSteelDefenseActive,
     isHotBloodActive,
+    isMagicWaterActive,
     consumeAttackNinjuSoulLevel,
     statusNinjuRule,
   };
