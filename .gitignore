@@ -6,3 +6,5 @@ Thumbs.db
 .git/
 .github/
 assets/
+portable-node/
+.claude

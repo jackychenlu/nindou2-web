@@ -48,6 +48,18 @@ function runtimeCallbacks(target) {
     mapGoldDropTypes: target.mapGoldDropTypes,
     mapItemDropTypes: target.mapItemDropTypes,
     mapConsumableDropTypes: target.mapConsumableDropTypes,
+    startMoneyDart: (unit, now) => {
+      unit.ninju = {
+        type: "consumable",
+        phase: "gap",
+        nextType: "moneyDart",
+        startedAt: now,
+        duration: target.ninjuChainGap || target.ninjuChainMaxGap || 500,
+        queue: 0,
+        gapMoves: 0,
+        pendingConsumables: [],
+      };
+    },
   };
 }
 
@@ -95,7 +107,20 @@ export function installConsumablesGlobals(target = globalThis) {
           ? [current.pendingEffect]
           : [];
         unit.consumableUse = null;
-        target.startStatusNinjuActive?.(unit, nextAction, now, remainingNinjutsu, false, [], pendingConsumableEffects);
+        unit.ninju = {
+          type: nextAction.type,
+          phase: "gap",
+          nextAction,
+          nextType: nextAction.type,
+          nextAttackNinjuLevel: nextAction.attackNinjuLevel || 0,
+          startedAt: now,
+          duration: target.ninjuChainMaxGap || 500,
+          queue: current.pendingNinjutsu.length,
+          pendingNinjutsu: remainingNinjutsu,
+          gapMoves: 0,
+          pendingMoneyDart: current.pendingMoneyDart,
+          pendingConsumables: [],
+        };
         if (target.canControlUnit?.(unit)) target.playSound?.("useNinju");
         continue;
       }
@@ -110,7 +135,20 @@ export function installConsumablesGlobals(target = globalThis) {
           ? [current.pendingEffect]
           : [];
         unit.consumableUse = null;
-        target.startStatusNinjuActive?.(unit, nextAction, now, remainingNinjutsu, false, [], pendingConsumableEffects);
+        unit.ninju = {
+          type: nextAction.type,
+          phase: "gap",
+          nextAction,
+          nextType: nextAction.type,
+          nextAttackNinjuLevel: nextAction.attackNinjuLevel || 0,
+          startedAt: now,
+          duration: target.ninjuChainMaxGap || 500,
+          queue: current.pendingNinjutsu.length,
+          pendingNinjutsu: remainingNinjutsu,
+          gapMoves: 0,
+          pendingMoneyDart: current.pendingMoneyDart,
+          pendingConsumables: [],
+        };
         if (target.canControlUnit?.(unit)) target.playSound?.("useNinju");
       }
     }

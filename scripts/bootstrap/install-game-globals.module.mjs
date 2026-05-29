@@ -100,10 +100,10 @@ export function installGameGlobals(target = globalThis) {
       target.drawBackdrop?.();
       target.drawBoard?.();
       target.drawMapMaskOverlay?.();
-      target.drawDrag?.();
       target.drawMapObjects?.();
       target.drawMoveTrails?.(frameNow);
       target.drawUnits?.();
+      target.drawDrag?.();
       target.drawNinjuEffects?.(frameNow);
       target.drawMoneyDartShootAnimations?.(frameNow);
       target.drawProjectiles?.(frameNow);

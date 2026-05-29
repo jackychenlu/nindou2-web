@@ -19,6 +19,7 @@ export function installNinjutsuGlobals(target = globalThis) {
   const state = () => runtimeState(target);
 
   function updateNinju(currentNow) {
+    checkPendingAttackNinju(currentNow);
     for (const unit of state().units) {
       if (!unit.ninju) continue;
 
@@ -256,6 +257,18 @@ export function installNinjutsuGlobals(target = globalThis) {
       target.setMessage?.(`${unit.name}：現在還不能使用忍術。`);
       return;
     }
+    if (unit.consumableUse?.phase === "active") {
+      if (unit.consumableUse.pendingMoneyDart) {
+        target.setMessage?.(`${unit.name}：錢鏢已經排程。`);
+        return;
+      }
+      unit.skill -= rule.cost;
+      unit.consumableUse.pendingMoneyDart = true;
+      target.playSound?.("useNinju");
+      target.clearDragState?.();
+      target.setMessage?.(`${unit.name}：錢鏢已排到道具之後。`);
+      return;
+    }
     if (isUnitCastingNinju(unit)) {
       if (unit.ninju.pendingMoneyDart) {
         target.setMessage?.(`${unit.name}：錢鏢已經排程。`);
@@ -418,7 +431,9 @@ export function installNinjutsuGlobals(target = globalThis) {
   }
 
   function isUnitInNinjuGap(unit) {
-    return Boolean(unit && unit.ninju && isStatusNinjuType(unit.ninju.type) && unit.ninju.phase === "gap" && now(target) - unit.ninju.startedAt < unit.ninju.duration);
+    if (!unit || !unit.ninju || unit.ninju.phase !== "gap") return false;
+    if (now(target) - unit.ninju.startedAt >= unit.ninju.duration) return false;
+    return isStatusNinjuType(unit.ninju.type) || unit.ninju.nextType === "moneyDart";
   }
 
   function isSteelDefenseActive(unit) {
@@ -472,7 +487,8 @@ export function installNinjutsuGlobals(target = globalThis) {
     const targets = attackNinjuTargets(caster, attackNinjuLevel);
     
     // === 關鍵修改：自訂雙音效延遲播放邏輯 ===
-    if (targets.length > 0 && config?.hitSound) {
+    const immediateTargetCount = targets.filter((t) => t.alive && !isUnitInvincible(t)).length;
+    if (immediateTargetCount > 0 && config?.hitSound) {
       if (typeof config.hitSound === "object") {
         // 延遲播放第一個音效
         setTimeout(() => {
@@ -491,6 +507,11 @@ export function installNinjutsuGlobals(target = globalThis) {
 
     // === 以下為您原本的所有後續遊戲邏輯，完整保留 ===
     for (const target of targets) {
+      if (!target.alive || isUnitInvincible(target)) {
+        target.pendingAttackNinju = target.pendingAttackNinju || [];
+        target.pendingAttackNinju.push({ type, casterName: caster.name });
+        continue;
+      }
       const outcome = attackNinjuOutcome(type, rule);
       const hit = Boolean(outcome);
       const disableMs = hit ? (outcome.hitDisableMs || rule.hitDisableMs) : rule.missDisableMs;
@@ -530,6 +551,60 @@ export function installNinjutsuGlobals(target = globalThis) {
   	  }
   	}
 
+  function playAttackNinjuHitSound(config) {
+    if (!config?.hitSound) return;
+    if (typeof config.hitSound === "object") {
+      setTimeout(() => { if (config.hitSound.sound1) target.playSound?.(config.hitSound.sound1); }, (config.hitSound.delay1 || 0) * 1000);
+      setTimeout(() => { if (config.hitSound.sound2) target.playSound?.(config.hitSound.sound2); }, (config.hitSound.delay2 || 0) * 1000);
+    } else {
+      target.playSound?.(config.hitSound);
+    }
+  }
+
+  function checkPendingAttackNinju(currentNow) {
+    for (const unit of state().units) {
+      if (!unit.pendingAttackNinju?.length) continue;
+      if (!unit.alive || isUnitInvincible(unit) || unit.ninju !== null || unit.consumableUse !== null) continue;
+      const pending = unit.pendingAttackNinju;
+      unit.pendingAttackNinju = [];
+      for (const entry of pending) {
+        const config = target.attackNinjuConfigs?.[entry.type];
+        playAttackNinjuHitSound(config);
+        const rule = attackNinjuRule(entry.type);
+        const outcome = attackNinjuOutcome(entry.type, rule);
+        const hit = Boolean(outcome);
+        const disableMs = hit ? (outcome.hitDisableMs || rule.hitDisableMs) : rule.missDisableMs;
+        unit.disabledUntil = currentNow + disableMs;
+        unit.invincibleUntil = unit.disabledUntil;
+        unit.moneyDart = null;
+        unit.hitFlash = hit ? 0.65 : 0.25;
+        target.cancelDragIfPressed?.(unit);
+        if (typeof target.addNinjuDamageEffect === "function") {
+          target.addNinjuDamageEffect(entry.type, unit, currentNow, hit && config?.holdHitLastFrame ? disableMs : (hit ? 1500 : 0), config?.holdHitLastFrame ? { frameDuration: 1500 } : {});
+          if (hit) {
+            if (config?.hitBodyEffect !== null) target.addNinjuDamageEffect(config?.hitBodyEffect || "flashHit", unit, currentNow + 1500, 2000);
+            target.addNinjuDamageEffect(outcome.headEffect || "flashHitHead", unit, currentNow + 1500, 2000, { frameDuration: 2000 });
+            if (config?.breakEffect) target.addNinjuDamageEffect(config.breakEffect, unit, currentNow + disableMs, 350);
+          } else {
+            target.addNinjuDamageEffect("flashMiss", unit, currentNow + 1500, 1000);
+          }
+        }
+        if (hit) {
+          const delay = config?.damageDelayMs || 0;
+          if (delay > 0) {
+            setTimeout(() => {
+              if (unit && unit.alive) {
+                target.damageUnit?.(unit, outcome.damage, `${entry.casterName} hit ${unit.name} with ${config?.label || entry.type}`, true, { name: entry.casterName });
+              }
+            }, delay);
+          } else {
+            target.damageUnit?.(unit, outcome.damage, `${entry.casterName} hit ${unit.name} with ${config?.label || entry.type}`, true, { name: entry.casterName });
+          }
+        }
+      }
+    }
+  }
+
   function attackNinjuOutcome(type, rule) {
     const outcomes = target.attackNinjuConfigs?.[type]?.outcomes;
     if (!outcomes) return Math.random() < rule.hitChance ? { damage: rule.damage, headEffect: "flashHitHead" } : null;
@@ -544,7 +619,7 @@ export function installNinjutsuGlobals(target = globalThis) {
   function attackNinjuTargets(caster, attackNinjuLevel) {
     const count = Math.max(0, Math.min(target.soulMaxLevel, attackNinjuLevel));
     return state().units
-      .filter((enemy) => enemy.alive && enemy.team !== caster.team && !isUnitInvincible(enemy))
+      .filter((enemy) => (enemy.alive || enemy.respawning) && enemy.team !== caster.team)
       .sort((a, b) => target.manhattan(caster, a) - target.manhattan(caster, b) || a.id - b.id)
       .slice(0, count);
   }
@@ -558,6 +633,7 @@ export function installNinjutsuGlobals(target = globalThis) {
     }
     const enemy = attackNinjuTargets(caster, 1)[0];
     if (!enemy) return;
+    if (!enemy.alive || isUnitInvincible(enemy)) return;
     if (config?.hitSound) target.playSound?.(config.hitSound);
     if (typeof target.addNinjuDamageEffect === "function") target.addNinjuDamageEffect(type, enemy, currentNow, 1500);
     if (rule.damage) target.damageUnit?.(enemy, rule.damage, `${caster.name} hit ${enemy.name} with ${config?.label || type}`, true, caster);
@@ -822,6 +898,7 @@ export function installNinjutsuGlobals(target = globalThis) {
     isMagicWaterActive,
     refreshStatusNinju,
     triggerAttackNinju,
+    checkPendingAttackNinju,
     attackNinjuOutcome,
     attackNinjuTargets,
     triggerSpecialNinju,
@@ -858,6 +935,7 @@ export function installNinjutsuGlobals(target = globalThis) {
     isSteelDefenseActive,
     isHotBloodActive,
     isMagicWaterActive,
+    checkPendingAttackNinju,
     consumeAttackNinjuSoulLevel,
     statusNinjuRule,
   };

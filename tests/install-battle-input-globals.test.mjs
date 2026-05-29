@@ -30,6 +30,7 @@ function createTarget(state, calls = []) {
     selectedUnit: () => state.units.find((candidate) => candidate.id === state.selectedId),
     canControlUnit: (candidate) => candidate.team === "blue",
     isUnitDisabled: () => false,
+    weaponIsReady: () => true,
     updateFacingFromPointer: (candidate) => { candidate.facing = "right"; calls.push(["updateFacingFromPointer", candidate.id]); },
     setMessage: (message) => { state.message = message; calls.push(["setMessage", message]); },
     throwMoneyDart: (...args) => calls.push(["throwMoneyDart", ...args]),

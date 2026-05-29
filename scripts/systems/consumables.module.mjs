@@ -239,7 +239,9 @@ export function executeConsumableItem(stateLike, unit, type, now, queue = [], ch
     pendingEffect: makePendingConsumableEffect(type, now, callbacks),
   };
   callbacks.playSound?.("spUp");
-  callbacks.setMessage?.(`${unit.name} 使用${itemLabel(type)}。`);
+  callbacks.setMessage?.(type === "sake4"
+    ? `${unit.name} 使用神酒。`
+    : `${unit.name} 使用神水。`);
 }
 
 export function requestConsumableUse(stateLike, unit, type, slotIndex = -1, callbacks = {}) {
@@ -276,22 +278,17 @@ export function updateConsumables(stateLike, now, callbacks = {}) {
     if (current.phase === "active") {
       applyConsumableUsePendingEffect(unit, current, now, callbacks);
       if (now - current.startedAt < current.duration) continue;
-      if (current.pendingEffect && !current.pendingEffect.applied && !current.pendingEffect.applyAfterNinjutsu) {
-        applyPendingConsumableEffect(unit, current.pendingEffect, now, callbacks);
-      }
-      if (current.queue?.length || current.pendingMoneyDart) {
-        unit.consumableUse = {
-          phase: "gap",
-          startedAt: now,
-          duration: callbacks.ninjuChainGap ?? callbacks.ninjuChainMaxGap ?? ninjuChainMaxGap,
-          queue: current.queue || [],
-          gapMoves: 0,
-          pendingMoneyDart: current.pendingMoneyDart,
-          pendingEffect: current.pendingEffect,
-        };
+      restoreConsumableSkill(unit, callbacks);
+      if (current.type === "sake4") applySake4MoveSkillFree(unit, now, callbacks);
+      if (unit.id === callbacks.playerUnitId) setMessage(current.type === "sake4"
+        ? `${unit.name} 技量回滿，15 秒內移動不消耗技。`
+        : `${unit.name} 技量回滿。`);
+      if (current.queue?.length) {
+        unit.consumableUse = { phase: "gap", startedAt: now, duration: callbacks.ninjuChainMaxGap ?? ninjuChainMaxGap, queue: current.queue, gapMoves: 0, pendingNinjutsu: current.pendingNinjutsu, pendingMoneyDart: current.pendingMoneyDart };
         if (unit.id === callbacks.playerUnitId) setMessage(`${unit.name}：道具連用空檔中。`);
       } else {
         unit.consumableUse = null;
+        if (current.pendingMoneyDart) callbacks.startMoneyDart?.(unit, now);
       }
       continue;
     }
@@ -307,6 +304,7 @@ export function updateConsumables(stateLike, now, callbacks = {}) {
           continue;
         }
         unit.consumableUse = null;
+        if (current.pendingMoneyDart) callbacks.startMoneyDart?.(unit, now);
         continue;
       }
       executeConsumableItem(
@@ -319,6 +317,7 @@ export function updateConsumables(stateLike, now, callbacks = {}) {
         [],
         callbacks,
       );
+      if (current.pendingMoneyDart) unit.consumableUse.pendingMoneyDart = current.pendingMoneyDart;
       if (unit.id === callbacks.playerUnitId) setMessage(`${unit.name}：道具續接完成。`);
     }
   }

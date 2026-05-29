@@ -89,7 +89,7 @@ export function installCombatGlobals(target = globalThis) {
   };
 
   function damageUnit(victim, baseDamage, label, announce = true, attacker = null) {
-    const damage = defendedDamage(victim, baseDamage);
+    const damage = defendedDamageRuntime(victim, baseDamage);
     const state = resolveRuntimeState(target);
     victim.hp -= damage;
     recordDamage(attacker, victim, damage);
@@ -146,6 +146,7 @@ export function installCombatGlobals(target = globalThis) {
   const damageObject = (object, attacker) => {
     const damage = unitWeaponDamageRuntime(attacker);
     object.hp = Math.max(0, object.hp - damage);
+    object.hitFlash = 0.65;
     target.setMessage(`${attacker.name} 攻擊 ${object.type}，造成 ${damage} 傷害。`);
     if (object.hp <= 0) {
       object.alive = false;
