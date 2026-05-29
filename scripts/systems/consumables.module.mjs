@@ -241,7 +241,9 @@ export function executeConsumableItem(stateLike, unit, type, now, queue = [], ch
   callbacks.playSound?.("spUp");
   callbacks.setMessage?.(type === "sake4"
     ? `${unit.name} 使用神酒。`
-    : `${unit.name} 使用神水。`);
+    : type === "magicWater"
+      ? `${unit.name} 使用魔水。`
+      : `${unit.name} 使用神水。`);
 }
 
 export function requestConsumableUse(stateLike, unit, type, slotIndex = -1, callbacks = {}) {
@@ -286,9 +288,18 @@ export function updateConsumables(stateLike, now, callbacks = {}) {
       if (current.queue?.length) {
         unit.consumableUse = { phase: "gap", startedAt: now, duration: callbacks.ninjuChainMaxGap ?? ninjuChainMaxGap, queue: current.queue, gapMoves: 0, pendingNinjutsu: current.pendingNinjutsu, pendingMoneyDart: current.pendingMoneyDart };
         if (unit.id === callbacks.playerUnitId) setMessage(`${unit.name}：道具連用空檔中。`);
+      } else if (current.pendingMoneyDart) {
+        unit.consumableUse = {
+          phase: "gap",
+          startedAt: now,
+          duration: callbacks.ninjuChainGap ?? callbacks.ninjuChainMaxGap ?? ninjuChainMaxGap,
+          queue: [],
+          gapMoves: 0,
+          pendingNinjutsu: current.pendingNinjutsu,
+          pendingMoneyDart: true,
+        };
       } else {
         unit.consumableUse = null;
-        if (current.pendingMoneyDart) callbacks.startMoneyDart?.(unit, now);
       }
       continue;
     }

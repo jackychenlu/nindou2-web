@@ -9,6 +9,7 @@
     "build": "node scripts/tools/ensure-classic-runtime-bundle.mjs --quiet && vite build",
     "preview": "node scripts/tools/ensure-classic-runtime-bundle.mjs --quiet && vite preview --host 127.0.0.1",
     "verify:vite": "node scripts/tools/verify-vite-runtime.mjs",
+    "verify:visual": "node scripts/tools/verify-visual-screens.mjs",
     "check": "node --check scripts/bootstrap/install-game-globals.module.mjs",
     "sync:weapons": "node scripts/tools/sync-bridge.mjs --key weapons",
     "sync:config-nindou": "node scripts/tools/sync-bridge.mjs --key config-nindou",
@@ -33,6 +34,6 @@
     "vite": "^8.0.14"
   },
   "dependencies": {
-    "pngjs": "^7.0.0"
+    "pixi.js": "^8.18.1"
   }
 }

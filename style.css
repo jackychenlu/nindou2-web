@@ -1249,6 +1249,31 @@ html[lang="en"] .room-title-select {
   background: #073641;
 }
 
+.renderer-toggle {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  display: none;
+  min-width: 82px;
+  height: 32px;
+  padding: 0 12px;
+  border: 2px solid #78c8d6;
+  background: rgba(5, 34, 43, .88);
+  color: #f4f7ef;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+body:not(.room-mode) .renderer-toggle {
+  display: block;
+}
+
+.renderer-toggle[aria-pressed="true"] {
+  border-color: #d8ef7b;
+  color: #d8ef7b;
+}
+
 .unit-info {
   display: flex;
   align-items: center;

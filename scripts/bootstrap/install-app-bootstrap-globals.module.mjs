@@ -43,6 +43,7 @@ export function installAppBootstrapGlobals(target = globalThis) {
     const ruleModeSelect = query(target, "#ruleModeSelect");
     const deathModeSelect = query(target, "#deathModeSelect");
     const roomMapSelect = query(target, "#roomMapSelect");
+    const rendererToggleBtn = query(target, "#rendererToggle");
     const win = runtimeWindow(target);
 
     canvas?.addEventListener("pointerdown", target.pointerDown);
@@ -74,6 +75,7 @@ export function installAppBootstrapGlobals(target = globalThis) {
       target.updateDeathModeUi?.();
     });
     roomMapSelect?.addEventListener("change", (event) => target.setRoomMap(event.target.value));
+    rendererToggleBtn?.addEventListener("click", target.toggleBattleRenderer);
     win.addEventListener?.("keydown", target.startBgm, { once: true });
   };
 
@@ -99,6 +101,7 @@ export function installAppBootstrapGlobals(target = globalThis) {
       target.updateDeathModeUi?.();
       target.updateRoomMapUi?.();
       target.applyVolumeControls?.();
+      target.updateBattleRendererToggle?.();
       if (state?.inRoom !== false) target.resetGame?.();
       target.startBgm?.();
       if (typeof target.startDrawLoop === "function") target.startDrawLoop();

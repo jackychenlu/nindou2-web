@@ -10,7 +10,7 @@
 - 路徑、函式、資料 key、參數名稱要寫明確。
 - 如果文件或註解出現亂碼，優先修 UTF-8 讀寫方式，不要改寫成別的語言逃避問題。
 - 新功能先放對位置：資料進 `scripts/data/*` 或 module 單一來源，行為進 `scripts/systems/*` 或 `scripts/bootstrap/install-*-globals.module.mjs`。
-- 同一份規則不要在多個檔案維護兩套；模式差異統一經過 `scripts/data/rule-modes.js`。
+- 同一份規則不要在多個檔案維護兩套；模式差異統一經過 `scripts/data/rule-modes.module.mjs`。
 - [忍2修改]模式若有問題先不管，只先確認[忍2原版]正確
 
 ---
@@ -21,7 +21,7 @@
 - 新功能先開分支，不直接推 `main`。
 - 工作樹可能本來就有使用者自己的修改，不要順手清掉。
 - 預設可忽略不影響執行的檔案，例如 `readme/**`、`*.md`、`*.xlsx`、暫存筆記；除非使用者明確要求整理。
-- 但只要有被程式實際引用，就不能當成「只是素材」忽略。像 `index.html`、`scripts/**`、`scripts/data/assets.js` 參照到的圖片、音效、動畫影格，都要一起處理。
+- 但只要有被程式實際引用，就不能當成「只是素材」忽略。像 `index.html`、`scripts/**`、`scripts/data/assets.module.mjs` 參照到的圖片、音效、動畫影格，都要一起處理。
 
 ---
 
@@ -50,7 +50,7 @@ pnpm build
 
 測試輸出不要浪費上下文：
 
-- 小改先跑精準測試，例如 `node --test tests\install-room-ui-globals.test.mjs tests\appearance-module.test.js`。
+- 小改先跑精準測試，例如 `node --test tests\install-room-ui-globals.test.mjs tests\install-appearance-globals.test.mjs`。
 - 交付前需要全量驗證時再跑 `pnpm test`；回報只寫 `194 passed` 這類摘要，不要貼完整 TAP。
 - 如果要看全量但降低輸出，用 `pnpm test -- --test-reporter=dot` 或 `rtk pnpm test`。
 - `pnpm test` 目前仍包含 legacy `.js` bridge / compatibility 測試；不要只因數量多就刪，先把對應區塊改成 module installer 測試後再移除舊測試。
@@ -62,7 +62,7 @@ pnpm build
 - 架構、載入順序、module mirror、主迴圈、規則模式、房間 UI、戰鬥與測試入口：[readme/architecture.md](./architecture.md)
 - Vite / ES module 遷移細節：[readme/vite-skill.md](./vite-skill.md)
 - 地圖、座標、阻擋格、出生點、地圖素材與地圖微調：[readme/maps.md](./maps.md)
-- 忍術資料層、忍術編輯 UI、攻擊系、分身、錢鏢與忍術修正：[readme/ninjutsu.md](./ninjutsu.md)
+- 忍術資料層與編輯表：[readme/ninjutsu-table.csv](./ninjutsu-table.csv)；runtime 實作在 `scripts/bootstrap/install-ninjutsu-globals.module.mjs`
 - 忍術數值整理表：[readme/ninjutsu-table.csv](./ninjutsu-table.csv)
 - 武器資料、範圍、傷害、音效與新增武器同步項：[readme/weapons.md](./weapons.md)
 - AI 類型、赤組、太刀達人、錢鏢 AI 與 AI 禁忌：[readme/ai.md](./ai.md)
@@ -103,7 +103,7 @@ pnpm build
 
 ## 6. 資料單一來源與同步
 
-- 武器資料已改成 module 單一來源：只手改 `scripts/data/weapons.module.mjs`，再跑 `pnpm sync:weapons` 產生 `scripts/data/weapons.js`。
+- 武器資料以 `scripts/data/weapons.module.mjs` 為主要來源；需要 bridge 時再跑 `pnpm sync:weapons`。
 - config 的忍術規則、道具常數、地圖設定、戰鬥常數、移動殘影、出生區等區段已改成 module 回填：改 `scripts/data/config.module.mjs` 後跑 `pnpm sync:config-nindou`。
 - ninjutsu-definitions 資料已改成 module 單一來源：改 `scripts/data/ninjutsu-definitions.module.mjs` 後跑 `pnpm sync:ninjutsu-definitions`。
 - locales 資料已改成 module 單一來源：改 `scripts/data/locales.module.mjs` 後跑 `pnpm sync:locales`。
@@ -137,52 +137,52 @@ pnpm build
 - `scripts/data/weapons.module.mjs`
 - `scripts/data/rule-modes.module.mjs`
 - `scripts/bootstrap/install-combat-globals.module.mjs`
-- `scripts/data/assets.js`
+- `scripts/data/assets.module.mjs`
 
 想改忍術：
 
-- 先看 [readme/ninjutsu.md](./ninjutsu.md)
+- 先看 `scripts/bootstrap/install-ninjutsu-globals.module.mjs` 與 [readme/ninjutsu-table.csv](./ninjutsu-table.csv)
 - `scripts/data/config.module.mjs`
 - `scripts/data/ninjutsu-definitions.module.mjs`
 - `scripts/data/rule-modes.module.mjs`
 - `scripts/bootstrap/install-ninjutsu-globals.module.mjs`
-- `scripts/data/assets.js`
+- `scripts/data/assets.module.mjs`
 
 想改地圖：
 
 - 先看 [readme/maps.md](./maps.md)
 - `scripts/data/config.module.mjs -> roomMapDefinitions`
 - `scripts/data/map.module.mjs`
-- `tests/grid.test.js`
+- `tests/install-grid-globals.test.mjs`
 
 想改 AI：
 
 - 先看 [readme/ai.md](./ai.md)
 - `scripts/bootstrap/install-ai-globals.module.mjs`
 - `scripts/systems/ai.module.mjs`
-- `tests/ai.test.js`
+- `tests/install-ai-globals.test.mjs`
 
 想改道具：
 
 - 先看 [readme/consumables.md](./consumables.md)
 - `scripts/data/config.module.mjs`
-- `scripts/data/assets.js`
+- `scripts/data/assets.module.mjs`
 - `scripts/systems/consumables.module.mjs`
 - `scripts/bootstrap/install-consumables-globals.module.mjs`
 - `scripts/bootstrap/install-room-ui-globals.module.mjs`
 
 想改角色外觀：
 
-- `scripts/data/assets.js -> lookDefinitions` / `baseTeamLookDefinitions`
+- `scripts/data/assets.module.mjs -> lookDefinitions` / `baseTeamLookDefinitions`
 - `scripts/data/locales.module.mjs -> look label`
-- `scripts/systems/appearance.js -> unitLookDefinition()` / 眼睛素材選擇
+- `scripts/systems/appearance.module.mjs` 與 `scripts/bootstrap/install-appearance-globals.module.mjs`
 - `scripts/bootstrap/install-room-ui-globals.module.mjs -> selectedLookKey()` / 房間外觀下拉 DOM
 
 想改 BGM 或音效播放流程：
 
-- `scripts/data/assets.js -> roomBgm` / `defaultBattleBgmSrc` / `soundSources`
+- `scripts/data/assets.module.mjs -> roomBgm` / `defaultBattleBgmSrc` / `soundSources`
 - `scripts/data/config.module.mjs -> roomMapDefinitions[*].battleBgmSrc`
-- `scripts/systems/audio.js -> syncBgm()` / `startBgm()` / `playSound()`
+- `scripts/systems/audio.module.mjs` 與 `scripts/bootstrap/install-audio-globals.module.mjs`
 - `scripts/bootstrap/install-game-globals.module.mjs` 只提供音量 slider DOM reference；音效流程在 audio/app bootstrap installer
 
 ---
@@ -191,10 +191,10 @@ pnpm build
 
 這些值是人工調好的，不要動，若使用者堅持要動，要先警告使用者：
 
-- `scripts/data/render-tuning.js -> eyeOffsets`
-- `scripts/data/render-tuning.js -> useNinjuSpriteOffset`
-- `scripts/data/render-tuning.js -> moveEffectOffsets`
-- `scripts/data/render-tuning.js -> moneyDartVisualOffsets`
+- `scripts/data/render-tuning.module.mjs -> eyeOffsets`
+- `scripts/data/render-tuning.module.mjs -> useNinjuSpriteOffset`
+- `scripts/data/render-tuning.module.mjs -> moveEffectOffsets`
+- `scripts/data/render-tuning.module.mjs -> moneyDartVisualOffsets`
 
 不要做的事：
 - 不要讓 `hotBlood` 影響衝撞或錢鏢。

@@ -1,17 +1,10 @@
-const NINJU_LOADOUT_STORAGE_KEY = "nindou2.ninjuLoadout";
-const ROOM_SKILL_INPUT_MAX = 9999;
-const DEFAULT_ROOM_ITEM_SLOTS = [
-  "backup3",
-  "backup3",
-  "backup3",
-  "backup3",
-  "backup3",
-  "magicWater",
-  "magicWater",
-  "magicWater",
-  "magicWater",
-  "magicWater",
-];
+import {
+  DEFAULT_DEATH_MODE_KEY,
+  DEFAULT_ROOM_ITEM_SLOTS,
+  DEFAULT_RULE_MODE_KEY,
+  NINJU_LOADOUT_STORAGE_KEY,
+  ROOM_SKILL_INPUT_MAX,
+} from "../data/room-defaults.module.mjs";
 
 function query(target, selector) {
   return target.document?.querySelector?.(selector) || null;
@@ -76,8 +69,8 @@ export function installGameGlobals(target = globalThis) {
     consumableEffects: [],
     moneyDartCasts: [],
     cloneDecoys: [],
-    ruleModeKey: "original",
-    deathModeKey: "death_heal",
+    ruleModeKey: DEFAULT_RULE_MODE_KEY,
+    deathModeKey: DEFAULT_DEATH_MODE_KEY,
     roomItemSlots: [...DEFAULT_ROOM_ITEM_SLOTS],
     onRoomInventoryChanged: null,
   };
@@ -113,6 +106,7 @@ export function installGameGlobals(target = globalThis) {
       target.drawFrame?.();
       target.drawResultOverlay?.();
       target.updatePanel?.();
+      target.drawPixiBattleFrame?.(frameNow);
     } catch (error) {
       target.console?.error?.("Render loop recovered", error);
       state.moneyDartCasts = [];

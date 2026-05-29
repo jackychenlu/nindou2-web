@@ -1,7 +1,10 @@
 import { resolveRuntimeState } from "./runtime-state-access.module.mjs";
-
-const NINJU_LOADOUT_STORAGE_KEY = "nindou2.ninjuLoadout";
-const ROOM_SKILL_INPUT_MAX = 9999;
+import {
+  DEFAULT_DEATH_MODE_KEY,
+  DEFAULT_RULE_MODE_KEY,
+  NINJU_LOADOUT_STORAGE_KEY,
+  ROOM_SKILL_INPUT_MAX,
+} from "../data/room-defaults.module.mjs";
 const TEAM_DEFAULT_LOOK_KEY = "__team_default__";
 
 function query(target, selector) {
@@ -267,13 +270,13 @@ export function installRoomUiGlobals(target = globalThis) {
     const select = query(target, "#ruleModeSelect");
     if (!select) return;
     const state = roomState(target);
-    const current = state.ruleModeKey || "original";
+    const current = state.ruleModeKey || DEFAULT_RULE_MODE_KEY;
     select.innerHTML = `
       <option value="original">${target.localizedRuleModeLabel("original")}</option>
       <option value="modified">${target.localizedRuleModeLabel("modified")}</option>
     `;
     select.value = current;
-    if (select.value !== current) select.value = "original";
+    if (select.value !== current) select.value = DEFAULT_RULE_MODE_KEY;
     select.setAttribute("aria-label", target.localizedRuleModeLabel(select.value));
   };
 
@@ -281,13 +284,13 @@ export function installRoomUiGlobals(target = globalThis) {
     const select = query(target, "#deathModeSelect");
     if (!select) return;
     const state = roomState(target);
-    const current = state.deathModeKey || "death_heal";
+    const current = state.deathModeKey || DEFAULT_DEATH_MODE_KEY;
     select.innerHTML = `
       <option value="death_command">${target.localizedDeathModeLabel("death_command")}</option>
       <option value="death_heal">${target.localizedDeathModeLabel("death_heal")}</option>
     `;
     select.value = current;
-    if (select.value !== current) select.value = "death_heal";
+    if (select.value !== current) select.value = DEFAULT_DEATH_MODE_KEY;
     select.setAttribute("aria-label", target.localizedDeathModeLabel(select.value));
   };
 
@@ -295,8 +298,8 @@ export function installRoomUiGlobals(target = globalThis) {
     const select = query(target, "#ruleModeSelect");
     if (!select) return;
     const state = roomState(target);
-    select.value = state.ruleModeKey || "original";
-    if (select.value !== (state.ruleModeKey || "original")) select.value = "original";
+    select.value = state.ruleModeKey || DEFAULT_RULE_MODE_KEY;
+    if (select.value !== (state.ruleModeKey || DEFAULT_RULE_MODE_KEY)) select.value = DEFAULT_RULE_MODE_KEY;
     select.setAttribute("aria-label", target.localizedRuleModeLabel(select.value));
   };
 
@@ -304,8 +307,8 @@ export function installRoomUiGlobals(target = globalThis) {
     const select = query(target, "#deathModeSelect");
     if (!select) return;
     const state = roomState(target);
-    select.value = state.deathModeKey || "death_heal";
-    if (select.value !== (state.deathModeKey || "death_heal")) select.value = "death_heal";
+    select.value = state.deathModeKey || DEFAULT_DEATH_MODE_KEY;
+    if (select.value !== (state.deathModeKey || DEFAULT_DEATH_MODE_KEY)) select.value = DEFAULT_DEATH_MODE_KEY;
     select.setAttribute("aria-label", target.localizedDeathModeLabel(select.value));
   };
 

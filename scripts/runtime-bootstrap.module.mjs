@@ -1,4 +1,3 @@
-import { CLASSIC_RUNTIME_SCRIPT_PATHS } from "./classic-runtime-manifest.module.mjs";
 import { loadClassicRuntime } from "./load-classic-runtime.module.mjs";
 import { installAppearanceGlobals } from "./bootstrap/install-appearance-globals.module.mjs";
 import { installAppBootstrapGlobals } from "./bootstrap/install-app-bootstrap-globals.module.mjs";
@@ -25,6 +24,7 @@ import { installMovementGlobals } from "./bootstrap/install-movement-globals.mod
 import { installMovementRendererGlobals } from "./bootstrap/install-movement-renderer-globals.module.mjs";
 import { installNinjutsuGlobals } from "./bootstrap/install-ninjutsu-globals.module.mjs";
 import { installOverlayRendererGlobals } from "./bootstrap/install-overlay-renderer-globals.module.mjs";
+import { installPixiRendererGlobals } from "./bootstrap/install-pixi-renderer-globals.module.mjs";
 import { installRenderTuningGlobals } from "./bootstrap/install-render-tuning-globals.module.mjs";
 import { installRoomUiGlobals } from "./bootstrap/install-room-ui-globals.module.mjs";
 import { installRuleModeGlobals } from "./bootstrap/install-rule-modes-globals.module.mjs";
@@ -62,6 +62,7 @@ export const REQUIRED_CLASSIC_GLOBALS = Object.freeze([
   "NindouMovement",
   "NindouMovementRenderer",
   "NindouSceneRenderer",
+  "NindouPixiRenderer",
   "NindouOverlayRenderer",
   "NindouEffectsRenderer",
   "NindouStatusUi",
@@ -97,7 +98,6 @@ export function missingClassicGlobals(target = globalThis, required = REQUIRED_C
 export async function bootstrapRuntime({
   target = globalThis,
   mode = resolveRuntimeMode(target),
-  scriptPaths = CLASSIC_RUNTIME_SCRIPT_PATHS, // kept for compatibility metadata
   allowScriptFallback = false,
   warn = console.warn,
 } = {}) {
@@ -130,6 +130,7 @@ export async function bootstrapRuntime({
     installCombatGlobals(target);
     installAiGlobals(target);
     installSceneRendererGlobals(target);
+    installPixiRendererGlobals(target);
     installOverlayRendererGlobals(target);
     installEffectsRendererGlobals(target);
     installStatusUiGlobals(target);

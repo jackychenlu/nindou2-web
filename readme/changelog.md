@@ -8,7 +8,7 @@
 ### 拆分後的細節文件
 
 - 地圖、座標、素材、阻擋格、出生點與近期地圖微調：[`readme/maps.md`](C:/Users/lane6/Documents/Codex/忍豆風雲2單機版/readme/maps.md)
-- 忍術資料層、編輯 UI、攻擊系、分身、錢鏢與近期忍術修正：[`readme/ninjutsu.md`](C:/Users/lane6/Documents/Codex/忍豆風雲2單機版/readme/ninjutsu.md)
+- 忍術資料層、編輯 UI、攻擊系、分身、錢鏢與近期忍術修正：`scripts/bootstrap/install-ninjutsu-globals.module.mjs`、`scripts/data/ninjutsu-definitions.module.mjs`
 - 道具、商店、道具欄、神水、神酒與道具音效/動畫：[`readme/consumables.md`](C:/Users/lane6/Documents/Codex/忍豆風雲2單機版/readme/consumables.md)
 
 ### 2026-05-18 道具系統
@@ -51,7 +51,7 @@
 
 - 控制模式 key：`ai_red`，顯示名稱是「赤組」，固定武器 `weapon8`，固定套用 `lookDefinitions.red`。
 - 赤組 AI 有專用定時器、斜角受擊反擊、九宮格武器攻擊、直線延遲衝撞與低血追擊判定。
-- 分身動畫與殘影外觀細節已移到 [`readme/ninjutsu.md`](C:/Users/lane6/Documents/Codex/忍豆風雲2單機版/readme/ninjutsu.md)。
+- 分身動畫與殘影外觀細節由忍術 installer、unit renderer 與 asset definitions 維護。
 - 對應測試在 `tests/ai.test.js`。
 
 ### 2026-05-21 趙活外觀
@@ -477,7 +477,7 @@
 - `scripts/bootstrap/install-ninjutsu-globals.module.mjs` now installs the full ninjutsu runtime: `updateNinju()`, status ninjutsu, attack ninjutsu, money dart, clone, chain/gap helpers, and invincibility/status checks.
 - `scripts/runtime-bootstrap.module.mjs` installs ninjutsu globals before loading the remaining classic bundle.
 - At this step, `scripts/classic-runtime-manifest.module.mjs` no longer loaded `scripts/systems/ninjutsu.js`; this was later superseded by the game runtime installer, which leaves the manifest empty.
-- Bundle tests now assert `ninjutsu.js` is absent; existing `tests/ninjutsu.test.js` still covers the behavior through the installed globals.
+- Bundle tests now assert `ninjutsu.js` is absent; `tests/install-ninjutsu-globals.test.mjs` covers the installed global behavior.
 - Browser smoke verified module ninjutsu in battle: steel applied, money dart hit an enemy, clone created 2 decoys, canvas stayed nonblank, and no page/console errors were raised.
 
 ### 2026-05-25 Evil-castle BGM correction

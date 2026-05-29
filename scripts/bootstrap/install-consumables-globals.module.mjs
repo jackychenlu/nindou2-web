@@ -107,20 +107,33 @@ export function installConsumablesGlobals(target = globalThis) {
           ? [current.pendingEffect]
           : [];
         unit.consumableUse = null;
-        unit.ninju = {
-          type: nextAction.type,
-          phase: "gap",
-          nextAction,
-          nextType: nextAction.type,
-          nextAttackNinjuLevel: nextAction.attackNinjuLevel || 0,
-          startedAt: now,
-          duration: target.ninjuChainMaxGap || 500,
-          queue: current.pendingNinjutsu.length,
-          pendingNinjutsu: remainingNinjutsu,
-          gapMoves: 0,
-          pendingMoneyDart: current.pendingMoneyDart,
-          pendingConsumables: [],
-        };
+        if (typeof target.startStatusNinjuActive === "function") {
+          target.startStatusNinjuActive(
+            unit,
+            nextAction,
+            now,
+            remainingNinjutsu,
+            current.pendingMoneyDart,
+            current.pendingConsumables || [],
+            pendingConsumableEffects,
+          );
+        } else {
+          unit.ninju = {
+            type: nextAction.type,
+            phase: "active",
+            nextAction,
+            nextType: nextAction.type,
+            nextAttackNinjuLevel: nextAction.attackNinjuLevel || 0,
+            startedAt: now,
+            duration: target.ninjuChainMaxGap || 500,
+            queue: current.pendingNinjutsu.length,
+            pendingNinjutsu: remainingNinjutsu,
+            gapMoves: 0,
+            pendingMoneyDart: current.pendingMoneyDart,
+            pendingConsumables: [],
+            pendingConsumableEffects,
+          };
+        }
         if (target.canControlUnit?.(unit)) target.playSound?.("useNinju");
         continue;
       }
@@ -135,20 +148,33 @@ export function installConsumablesGlobals(target = globalThis) {
           ? [current.pendingEffect]
           : [];
         unit.consumableUse = null;
-        unit.ninju = {
-          type: nextAction.type,
-          phase: "gap",
-          nextAction,
-          nextType: nextAction.type,
-          nextAttackNinjuLevel: nextAction.attackNinjuLevel || 0,
-          startedAt: now,
-          duration: target.ninjuChainMaxGap || 500,
-          queue: current.pendingNinjutsu.length,
-          pendingNinjutsu: remainingNinjutsu,
-          gapMoves: 0,
-          pendingMoneyDart: current.pendingMoneyDart,
-          pendingConsumables: [],
-        };
+        if (typeof target.startStatusNinjuActive === "function") {
+          target.startStatusNinjuActive(
+            unit,
+            nextAction,
+            now,
+            remainingNinjutsu,
+            current.pendingMoneyDart,
+            current.pendingConsumables || [],
+            pendingConsumableEffects,
+          );
+        } else {
+          unit.ninju = {
+            type: nextAction.type,
+            phase: "active",
+            nextAction,
+            nextType: nextAction.type,
+            nextAttackNinjuLevel: nextAction.attackNinjuLevel || 0,
+            startedAt: now,
+            duration: target.ninjuChainMaxGap || 500,
+            queue: current.pendingNinjutsu.length,
+            pendingNinjutsu: remainingNinjutsu,
+            gapMoves: 0,
+            pendingMoneyDart: current.pendingMoneyDart,
+            pendingConsumables: [],
+            pendingConsumableEffects,
+          };
+        }
         if (target.canControlUnit?.(unit)) target.playSound?.("useNinju");
       }
     }
