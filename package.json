@@ -20,6 +20,8 @@
     "sync:bridges:validate": "node scripts/tools/sync-bridge.mjs --validate",
     "sync:bridges:list": "node scripts/tools/sync-bridge.mjs --list",
     "sync:bridges:dry-run": "node scripts/tools/sync-bridge.mjs --key all --dry-run --json",
+    "images:convert": "node scripts/tools/convert-images.mjs",
+    "images:convert:dry-run": "node scripts/tools/convert-images.mjs --dry-run",
     "test": "node --test"
   },
   "keywords": [],
