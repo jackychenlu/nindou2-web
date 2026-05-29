@@ -16,7 +16,7 @@
  */
 
 import { spawnSync } from "node:child_process";
-import { existsSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readdirSync, statSync, unlinkSync } from "node:fs";
 import { join, extname, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
@@ -147,21 +147,25 @@ async function convertLossyWebP() {
   let converted = 0;
   let skipped = 0;
   let failed = 0;
+  const convertedFiles = [];
 
   for (const file of pngFiles) {
     const outFile = file.replace(/\.png$/i, ".webp");
     if (!FORCE && existsSync(outFile)) {
       skipped++;
+      convertedFiles.push(file); // 已有 .webp，原檔同樣可刪
       continue;
     }
     if (DRY_RUN) {
       console.log(`  [dry] ${file} → ${outFile}`);
       converted++;
+      convertedFiles.push(file);
       continue;
     }
     try {
       await sharp(file).webp({ quality: LOSSY_QUALITY }).toFile(outFile);
       converted++;
+      convertedFiles.push(file);
     } catch (err) {
       console.warn(`  ⚠ 轉換失敗 ${file}: ${err.message}`);
       failed++;
@@ -171,6 +175,7 @@ async function convertLossyWebP() {
   console.log(
     `  結果：轉換 ${converted}、已存在跳過 ${skipped}、失敗 ${failed}`
   );
+  return convertedFiles;
 }
 
 // ─── Step 3：無損 WebP（其他資料夾）─────────────────────────────────────────
@@ -190,21 +195,25 @@ async function convertLosslessWebP() {
   let converted = 0;
   let skipped = 0;
   let failed = 0;
+  const convertedFiles = [];
 
   for (const file of pngFiles) {
     const outFile = file.replace(/\.png$/i, ".webp");
     if (!FORCE && existsSync(outFile)) {
       skipped++;
+      convertedFiles.push(file); // 已有 .webp，原檔同樣可刪
       continue;
     }
     if (DRY_RUN) {
       console.log(`  [dry] ${file} → ${outFile}`);
       converted++;
+      convertedFiles.push(file);
       continue;
     }
     try {
       await sharp(file).webp({ lossless: true }).toFile(outFile);
       converted++;
+      convertedFiles.push(file);
     } catch (err) {
       console.warn(`  ⚠ 轉換失敗 ${file}: ${err.message}`);
       failed++;
@@ -214,6 +223,40 @@ async function convertLosslessWebP() {
   console.log(
     `  結果：轉換 ${converted}、已存在跳過 ${skipped}、失敗 ${failed}`
   );
+  return convertedFiles;
+}
+
+// ─── 主流程 ──────────────────────────────────────────────────────────────────
+
+// ─── Step 4：刪除已轉換的原始 PNG ────────────────────────────────────────────
+
+function deleteOriginalPngs(files) {
+  console.log("\n── Step 4：刪除原始 PNG ────────────────────────────────────────");
+
+  if (files.length === 0) {
+    console.log("  沒有可刪除的原始 PNG。");
+    return;
+  }
+
+  let deleted = 0;
+  let failed = 0;
+
+  for (const file of files) {
+    if (DRY_RUN) {
+      console.log(`  [dry] 刪除 ${file}`);
+      deleted++;
+      continue;
+    }
+    try {
+      unlinkSync(file);
+      deleted++;
+    } catch (err) {
+      console.warn(`  ⚠ 刪除失敗 ${file}: ${err.message}`);
+      failed++;
+    }
+  }
+
+  console.log(`  結果：刪除 ${deleted}、失敗 ${failed}`);
 }
 
 // ─── 主流程 ──────────────────────────────────────────────────────────────────
@@ -223,8 +266,11 @@ async function main() {
   const startTime = Date.now();
 
   await runPngquant();
-  await convertLossyWebP();
-  await convertLosslessWebP();
+  const lossyConverted = await convertLossyWebP();
+  const losslessConverted = await convertLosslessWebP();
+
+  const allConverted = [...(lossyConverted ?? []), ...(losslessConverted ?? [])];
+  deleteOriginalPngs(allConverted);
 
   console.log(`\n完成，耗時 ${formatElapsed(Date.now() - startTime)}`);
 }
