@@ -19,7 +19,7 @@ test("buildConfigBridgeBlock renders markers and declared keys", () => {
   const block = buildConfigBridgeBlock(configModule);
   assert.equal(block.includes(CONFIG_BRIDGE_START_MARKER), true);
   assert.equal(block.includes(CONFIG_BRIDGE_END_MARKER), true);
-  assert.equal(block.includes("Run: npm run sync:config-nindou"), true);
+  assert.equal(block.includes("Run: pnpm sync:config-nindou"), true);
   for (const key of [...CONFIG_LITERAL_KEYS, ...CONFIG_SCALAR_KEYS]) {
     assert.equal(block.includes(`const ${key} =`), true);
   }

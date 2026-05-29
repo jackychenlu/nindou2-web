@@ -30,20 +30,20 @@
 修改 JS 後至少先跑：
 
 ~~~powershell
-npm run check
+pnpm check
 ~~~
 
 如果有碰規則、座標、戰鬥、武器、測試 scaffold，再跑：
 
 ~~~powershell
-npm test
+pnpm test
 ~~~
 
 如果有碰 Vite、`.module.mjs`、legacy bridge、`scripts/main.module.js`、`index.html` 腳本載入或啟動檔，再跑：
 
 ~~~powershell
-npm test
-npm run build
+pnpm test
+pnpm build
 ~~~
 
 並用 Vite 頁面確認 `globalThis.NindouModuleProbe` 內所有 `isSynced` 都是 `true`。
@@ -51,9 +51,9 @@ npm run build
 測試輸出不要浪費上下文：
 
 - 小改先跑精準測試，例如 `node --test tests\install-room-ui-globals.test.mjs tests\appearance-module.test.js`。
-- 交付前需要全量驗證時再跑 `npm test`；回報只寫 `194 passed` 這類摘要，不要貼完整 TAP。
-- 如果要看全量但降低輸出，用 `npm test -- --test-reporter=dot` 或 `rtk npm test`。
-- `npm test` 目前仍包含 legacy `.js` bridge / compatibility 測試；不要只因數量多就刪，先把對應區塊改成 module installer 測試後再移除舊測試。
+- 交付前需要全量驗證時再跑 `pnpm test`；回報只寫 `194 passed` 這類摘要，不要貼完整 TAP。
+- 如果要看全量但降低輸出，用 `pnpm test -- --test-reporter=dot` 或 `rtk pnpm test`。
+- `pnpm test` 目前仍包含 legacy `.js` bridge / compatibility 測試；不要只因數量多就刪，先把對應區塊改成 module installer 測試後再移除舊測試。
 
 ---
 
@@ -77,7 +77,7 @@ npm run build
 
 目前重要架構狀態：
 
-- 本機開發優先用 Vite：在 repo 內執行 `npm run dev` 後開 `http://127.0.0.1:5173/index.html`。
+- 本機開發優先用 Vite：在 repo 內執行 `pnpm dev` 後開 `http://127.0.0.1:5173/index.html`。
 - 日常雙擊遊玩用 repo 根目錄的 `啟動遊戲.cmd`，它會在背景啟動 `http://127.0.0.1:5174/index.html` 的 `scripts/tools/serve-game.mjs` 輕量靜態 server，不走 Vite 冷啟動，正常啟動後只顯示瀏覽器遊戲頁。
 - `index.html` 已收斂為單一 `type="module"` entry（`scripts/main.module.js`）。
 - runtime 目前由 `scripts/runtime-bootstrap.module.mjs` 依序安裝 module globals；`scripts/classic-runtime-manifest.module.mjs` 的 runtime script 清單目前是空陣列。
@@ -103,13 +103,13 @@ npm run build
 
 ## 6. 資料單一來源與同步
 
-- 武器資料已改成 module 單一來源：只手改 `scripts/data/weapons.module.mjs`，再跑 `npm run sync:weapons` 產生 `scripts/data/weapons.js`。
-- config 的忍術規則、道具常數、地圖設定、戰鬥常數、移動殘影、出生區等區段已改成 module 回填：改 `scripts/data/config.module.mjs` 後跑 `npm run sync:config-nindou`。
-- ninjutsu-definitions 資料已改成 module 單一來源：改 `scripts/data/ninjutsu-definitions.module.mjs` 後跑 `npm run sync:ninjutsu-definitions`。
-- locales 資料已改成 module 單一來源：改 `scripts/data/locales.module.mjs` 後跑 `npm run sync:locales`。
-- map 資料已改成 module 單一來源：改 `scripts/data/map.module.mjs` 後跑 `npm run sync:map`。
-- rule-modes 資料已改成 module 單一來源：改 `scripts/data/rule-modes.module.mjs` 後跑 `npm run sync:rule-modes`。
-- 多個 bridge 可用 `npm run sync:bridges`；先看 `readme/architecture.md` 與 `readme/vite-skill.md` 確認 bridge 狀態。
+- 武器資料已改成 module 單一來源：只手改 `scripts/data/weapons.module.mjs`，再跑 `pnpm sync:weapons` 產生 `scripts/data/weapons.js`。
+- config 的忍術規則、道具常數、地圖設定、戰鬥常數、移動殘影、出生區等區段已改成 module 回填：改 `scripts/data/config.module.mjs` 後跑 `pnpm sync:config-nindou`。
+- ninjutsu-definitions 資料已改成 module 單一來源：改 `scripts/data/ninjutsu-definitions.module.mjs` 後跑 `pnpm sync:ninjutsu-definitions`。
+- locales 資料已改成 module 單一來源：改 `scripts/data/locales.module.mjs` 後跑 `pnpm sync:locales`。
+- map 資料已改成 module 單一來源：改 `scripts/data/map.module.mjs` 後跑 `pnpm sync:map`。
+- rule-modes 資料已改成 module 單一來源：改 `scripts/data/rule-modes.module.mjs` 後跑 `pnpm sync:rule-modes`。
+- 多個 bridge 可用 `pnpm sync:bridges`；先看 `readme/architecture.md` 與 `readme/vite-skill.md` 確認 bridge 狀態。
 
 ---
 

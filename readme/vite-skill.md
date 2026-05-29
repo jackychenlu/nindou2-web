@@ -14,7 +14,7 @@
 2. 從低風險資料檔開始轉 ES module，例如 `weapons.js`、`config.js`、`map.js`。
 3. 系統檔逐步改成 `import` / `export`，不要再依賴 `<script>` 載入順序。
 4. 最後把 `index.html` 底部的多個 classic `<script>` 收斂成一個 `type="module"` entry。
-5. 測試要同步改；目前 `npm test` 很多測試仍靠 `tests/helpers/script-loader.js` 模擬舊 script 順序，轉 module 後要逐步改成直接 `import` 測試。
+5. 測試要同步改；目前 `pnpm test` 很多測試仍靠 `tests/helpers/script-loader.js` 模擬舊 script 順序，轉 module 後要逐步改成直接 `import` 測試。
 
 ---
 
@@ -23,19 +23,19 @@
 目前是過渡期，不是把所有 `.js` 都改名成 `.mjs`：
 
 - 目前建議先暫停繼續拆 helper。Vite 骨架與 module mirror 已足夠支援後續開發；短期如果要做幾十種模式、武器、地圖，優先回到玩法內容。
-- 已加入 Vite skeleton：`npm run dev`、`npm run build`、`npm run preview`。
+- 已加入 Vite skeleton：`pnpm dev`、`pnpm build`、`pnpm preview`。
 - `index.html` 已收斂成單一 `type="module"` entry（`scripts/main.module.js`）。
 - runtime 目前由 `scripts/runtime-bootstrap.module.mjs` 依序安裝 module globals；`scripts/classic-runtime-manifest.module.mjs` 的 runtime script 清單目前是空陣列。
 - `scripts/load-classic-runtime.module.mjs` 保留相容入口；manifest 為空時回傳 `mode: "none"`，不載入 classic bundle。
 - `vite.config.js` 目前只打包 module entry，並複製 `assets/`、`scripts/`、`index.html`、`style.css` 到 `dist/`。
 - 目前 production build 會轉換 18 個 modules。
 - 想用本機快速遊玩，可雙擊 repo 根目錄的 `啟動遊戲.cmd`。launcher 會用背景 server 開 `http://127.0.0.1:5174/index.html`，正常啟動後只顯示瀏覽器遊戲頁。
-- `weapons` 已切成單一來源：只手改 `scripts/data/weapons.module.mjs`，再跑 `npm run sync:weapons` 產生 `scripts/data/weapons.js`。
-- `config` 已先切一段單一來源：`ninjutsuRuleProfiles + attackNinjuOutcomeTables + 六顆忍術按鈕 rect + itemSlot/defaultConsumable 常數 + mapItemDrop 常數 + countdown 常數 + soul/ninjuChain 常數 + 核心戰鬥常數(weapon/maxSkill/objectHp/maxHp/collision) + 開局/重生常數(hold/charge/respawn/unit) + 移動殘影常數(ARRIVE/PREARRIVE) + 版面/出生區常數(ui/startingAreas) + 地圖設定常數(grid/drawInset/roomMapDefinitions) + NindouConfig` 段落由 `scripts/data/config.module.mjs` 回填，改完要跑 `npm run sync:config-nindou`。
-- `ninjutsu-definitions` 已切成單一來源：只手改 `scripts/data/ninjutsu-definitions.module.mjs`，再跑 `npm run sync:ninjutsu-definitions` 產生 `scripts/data/ninjutsu-definitions.js`。
-- `locales` 已切成單一來源：只手改 `scripts/data/locales.module.mjs`，再跑 `npm run sync:locales` 產生 `scripts/data/locales.js`。
-- `map` 已切成單一來源：只手改 `scripts/data/map.module.mjs`，再跑 `npm run sync:map` 產生 `scripts/data/map.js`。
-- `rule-modes` 已切成單一來源：只手改 `scripts/data/rule-modes.module.mjs`，再跑 `npm run sync:rule-modes` 產生 `scripts/data/rule-modes.js`。
+- `weapons` 已切成單一來源：只手改 `scripts/data/weapons.module.mjs`，再跑 `pnpm sync:weapons` 產生 `scripts/data/weapons.js`。
+- `config` 已先切一段單一來源：`ninjutsuRuleProfiles + attackNinjuOutcomeTables + 六顆忍術按鈕 rect + itemSlot/defaultConsumable 常數 + mapItemDrop 常數 + countdown 常數 + soul/ninjuChain 常數 + 核心戰鬥常數(weapon/maxSkill/objectHp/maxHp/collision) + 開局/重生常數(hold/charge/respawn/unit) + 移動殘影常數(ARRIVE/PREARRIVE) + 版面/出生區常數(ui/startingAreas) + 地圖設定常數(grid/drawInset/roomMapDefinitions) + NindouConfig` 段落由 `scripts/data/config.module.mjs` 回填，改完要跑 `pnpm sync:config-nindou`。
+- `ninjutsu-definitions` 已切成單一來源：只手改 `scripts/data/ninjutsu-definitions.module.mjs`，再跑 `pnpm sync:ninjutsu-definitions` 產生 `scripts/data/ninjutsu-definitions.js`。
+- `locales` 已切成單一來源：只手改 `scripts/data/locales.module.mjs`，再跑 `pnpm sync:locales` 產生 `scripts/data/locales.js`。
+- `map` 已切成單一來源：只手改 `scripts/data/map.module.mjs`，再跑 `pnpm sync:map` 產生 `scripts/data/map.js`。
+- `rule-modes` 已切成單一來源：只手改 `scripts/data/rule-modes.module.mjs`，再跑 `pnpm sync:rule-modes` 產生 `scripts/data/rule-modes.js`。
 
 目前頁面 probe 檢查：
 
@@ -67,7 +67,7 @@
 - `package.json`：新增 `dev`、`build`、`preview` scripts，加入 `vite`。
 - `vite.config.js`：設定 `base: "./"`，build entry 指向 `scripts/main.module.js`，並用 copy plugin 複製 classic runtime 需要的檔案。
 - `index.html`：只保留 `scripts/main.module.js` 一個 module entry。
-- `啟動遊戲.cmd`：雙擊後以隱藏背景流程啟動輕量 server，並開 `http://127.0.0.1:5174/index.html`；使用自身所在資料夾作為工作目錄，搬到其他電腦路徑不同也可用。若第一次沒有 `node_modules`，會先執行 `npm install`。
+- `啟動遊戲.cmd`：雙擊後以隱藏背景流程啟動輕量 server，並開 `http://127.0.0.1:5174/index.html`；使用自身所在資料夾作為工作目錄，搬到其他電腦路徑不同也可用。若第一次沒有 `node_modules`，會先執行 `pnpm install`。
 
 ### Data modules
 
@@ -96,11 +96,11 @@
 Classic scripts 暫時會暴露 bridge 供 module probe 比對：
 
 - `scripts/data/config.js -> globalThis.NindouConfig`
-- `scripts/data/weapons.js -> globalThis.NindouWeapons`（由 `npm run sync:weapons` 產生，勿手改）
-- `scripts/data/locales.js -> globalThis.NindouLocales`（由 `npm run sync:locales` 產生，勿手改）
+- `scripts/data/weapons.js -> globalThis.NindouWeapons`（由 `pnpm sync:weapons` 產生，勿手改）
+- `scripts/data/locales.js -> globalThis.NindouLocales`（由 `pnpm sync:locales` 產生，勿手改）
 - `scripts/data/ninjutsu-definitions.js -> globalThis.NindouNinjutsu`
 - `scripts/data/rule-modes.js -> globalThis.NindouRuleModes`
-- `scripts/data/map.js -> globalThis.NindouMaps`（由 `npm run sync:map` 產生，勿手改）
+- `scripts/data/map.js -> globalThis.NindouMaps`（由 `pnpm sync:map` 產生，勿手改）
 - `scripts/data/assets.js -> globalThis.NindouAssets`
 - `scripts/systems/appearance.js -> globalThis.NindouAppearance`
 - `scripts/systems/state-helpers.js -> globalThis.NindouStateHelpers`
@@ -148,25 +148,25 @@ Classic scripts 暫時會暴露 bridge 供 module probe 比對：
 目前驗證基準：
 
 ```powershell
-npm test
-npm run build
-npm run verify:vite
-npm run check
-npm audit --omit=optional
+pnpm test
+pnpm build
+pnpm verify:vite
+pnpm check
+pnpm audit --omit=optional
 ```
 
 Bridge 同步檢查（不寫檔）：
 
 ```powershell
-npm run sync:bridges:validate
-npm run sync:bridges:list
+pnpm sync:bridges:validate
+pnpm sync:bridges:list
 node scripts/tools/sync-bridge.mjs --key all --dry-run --json
-npm run sync:bridges:dry-run
+pnpm sync:bridges:dry-run
 ```
 
 前端確認：
 
-1. 啟動 Vite：`npm run dev`，或雙擊 `啟動遊戲.cmd`。
+1. 啟動 Vite：`pnpm dev`，或雙擊 `啟動遊戲.cmd`。
 2. 開 `http://127.0.0.1:5173/index.html`。
 3. 確認沒有 page error。
 4. 確認 `globalThis.NindouModuleProbe` 內所有 `isSynced` 都是 `true`。
@@ -188,20 +188,20 @@ npm run sync:bridges:dry-run
 武器資料日常流程：
 
 1. 只改 `scripts/data/weapons.module.mjs`。
-2. 跑 `npm run sync:weapons` 產生 classic bridge `scripts/data/weapons.js`。
-3. 跑 `npm test` 與 `npm run build`，確認 probe / mirror 同步。
+2. 跑 `pnpm sync:weapons` 產生 classic bridge `scripts/data/weapons.js`。
+3. 跑 `pnpm test` 與 `pnpm build`，確認 probe / mirror 同步。
 
 locales 資料日常流程：
 
 1. 只改 `scripts/data/locales.module.mjs`。
-2. 跑 `npm run sync:locales` 產生 classic bridge `scripts/data/locales.js`。
-3. 跑 `npm test` 與 `npm run build`，確認 probe / mirror 同步。
+2. 跑 `pnpm sync:locales` 產生 classic bridge `scripts/data/locales.js`。
+3. 跑 `pnpm test` 與 `pnpm build`，確認 probe / mirror 同步。
 
 map 資料日常流程：
 
 1. 只改 `scripts/data/map.module.mjs`。
-2. 跑 `npm run sync:map` 產生 classic bridge `scripts/data/map.js`。
-3. 跑 `npm test` 與 `npm run build`，確認 probe / mirror 同步。
+2. 跑 `pnpm sync:map` 產生 classic bridge `scripts/data/map.js`。
+3. 跑 `pnpm test` 與 `pnpm build`，確認 probe / mirror 同步。
 
 暫時不要做：
 
@@ -265,20 +265,20 @@ map 資料日常流程：
   - `generate-map-classic.mjs`
   - `generate-rule-modes-classic.mjs`
   - `generate-ninjutsu-definitions-classic.mjs`
-- Added `npm run sync:bridges` (`scripts/tools/sync-data-bridges.mjs`) to sync all data bridges in one command.
+- Added `pnpm sync:bridges` (`scripts/tools/sync-data-bridges.mjs`) to sync all data bridges in one command.
 - Goal: reduce duplicated generator maintenance and make module->classic bridge sync a single routine step during Vite migration.
 
 ## 2026-05-24 Bridge manifest pipeline
 
 - Added `scripts/tools/bridge-manifest.mjs` as single declarative source for data bridge targets (`weapons`, `ninjutsu-definitions`, `locales`, `map`, `rule-modes`).
 - Added `scripts/tools/run-bridge-sync.mjs` to run either one bridge (`runBridgeByKey`) or all (`runAllBridges`).
-- `generate-*.mjs` scripts are now thin compatibility wrappers only, so existing `npm run sync:*` commands keep working while maintenance moves to manifest entries.
+- `generate-*.mjs` scripts are now thin compatibility wrappers only, so existing `pnpm sync:*` commands keep working while maintenance moves to manifest entries.
 
 ## 2026-05-24 Config bridge merged into manifest
 
 - `config` bridge (marker patch in `scripts/data/config.js`) is now also managed by `bridge-manifest.mjs` under key `config-nindou`.
 - `scripts/tools/generate-config-nindou-bridge.mjs` is now a thin wrapper that calls `runBridgeByKey("config-nindou")`.
-- `npm run sync:bridges` now runs `config-nindou + 5 data bridges` through one unified runner.
+- `pnpm sync:bridges` now runs `config-nindou + 5 data bridges` through one unified runner.
 
 ## 2026-05-25 Single CLI sync entry
 
@@ -308,7 +308,7 @@ map 資料日常流程：
 
 - `sync-bridge.mjs` now supports `--list` (print manifest bridge keys) and `--validate` (manifest sanity check only).
 - `bridge-manifest.mjs` now exports `BRIDGE_KEYS` and `listBridgeKeys()` as single-source key outputs.
-- Added npm helpers: `sync:bridges:list` and `sync:bridges:validate`.
+- Added pnpm helpers: `sync:bridges:list` and `sync:bridges:validate`.
 
 ## 2026-05-25 Probe section modular split
 
@@ -343,7 +343,7 @@ map 資料日常流程：
 - Added `scripts/tools/serve-game.mjs`, a thin static HTTP server for playing the game without Vite dev-server cold start.
 - `啟動遊戲.cmd` now starts `serve-game.mjs` on `127.0.0.1:5174`, waits for `/index.html`, then opens the browser.
 - Port `5174` is intentionally separate from Vite dev's `5173`, so an already-running Vite server does not make the launcher reuse the slow path.
-- Keep `npm run dev` for Vite development work; use `啟動遊戲.cmd` for fast double-click play.
+- Keep `pnpm dev` for Vite development work; use `啟動遊戲.cmd` for fast double-click play.
 
 ## 2026-05-25 Locales runtime source switched to module install
 
@@ -601,7 +601,7 @@ map 資料日常流程：
 - Classic bundle output is skipped when the manifest is empty; stale `scripts/generated/classic-runtime.bundle.js` is removed instead of keeping a zero-entry wrapper.
 - Added `tests/install-game-globals.test.mjs`; bundle/manifest/load tests now assert `game.js` is absent from runtime loading.
 - Superseded on 2026-05-26 cleanup: `game.js` and generated `scripts/generated/classic-runtime.bundle.js` were removed from the checkout.
-- Verified with `npm test`, `npm run verify:vite`, and browser smoke: room loads, battle starts, canvas is nonblank, `loadedScriptCount` is `0`, and `loadMode` is `none`.
+- Verified with `pnpm test`, `pnpm verify:vite`, and browser smoke: room loads, battle starts, canvas is nonblank, `loadedScriptCount` is `0`, and `loadMode` is `none`.
 
 ## 2026-05-26 Ninjutsu runtime switched to module install
 
@@ -642,7 +642,7 @@ map 資料日常流程：
 - Attempting to remove `scripts/systems/movement.js` from `CLASSIC_RUNTIME_SCRIPT_PATHS` made real battle movement stop working.
 - Root cause: the movement installer exposes helper functions, but the current battle input/runtime still relies on the classic executable movement flow for skill spending, trails, collision side effects, and drag completion.
 - Superseded on 2026-05-26: the installer now includes the full side-effecting movement flow and `movement.js` is no longer in the runtime bundle.
-- After changing runtime manifest entries, run `npm run verify:vite`; with an empty manifest the bundle output is skipped.
+- After changing runtime manifest entries, run `pnpm verify:vite`; with an empty manifest the bundle output is skipped.
 
 ## 2026-05-25 AI/Combat runtime rollback note
 

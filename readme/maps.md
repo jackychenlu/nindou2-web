@@ -128,7 +128,7 @@
 - `evil-castle-2` 已不再共用 `evil-castle-1` 的 `objectLayout`；後續兩張地圖的位置可獨立修改。
 - 極惡城 door1 障礙物用 `assets/map/map/極惡城1/door-overlay.webp`，目前佔 8 格：`[8,12]` 到 `[11,11]`。
 - 極惡城固定出生點：`blue1 [9,3]`、`blue2 [8,1]`、`blue3 [9,1]`、`blue4 [10,1]`、`grey1 [6,9]`、`grey2 [8,8]`、`grey3 [11,8]`、`grey4 [13,9]`。
-- 極惡城地圖規則有測試覆蓋在 `tests/grid.test.js`；改座標、阻擋、物件佔格後至少跑 `node --test .\tests\grid.test.js` 和 `npm test`。
+- 極惡城地圖規則有測試覆蓋在 `tests/grid.test.js`；改座標、阻擋、物件佔格後至少跑 `node --test .\tests\grid.test.js` 和 `pnpm test`。
 
 ### 2026-05-22 極惡城之二
 

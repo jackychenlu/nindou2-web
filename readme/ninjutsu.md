@@ -116,6 +116,6 @@
 
 ## 6. 驗證
 
-- 忍術資料或流程改動後至少跑 `npm run check`。
+- 忍術資料或流程改動後至少跑 `pnpm check`。
 - 涉及忍術規則、分身、錢鏢、回血時，跑 `node --test .\tests\ninjutsu.test.js`。
-- 能跑完整回歸時，跑 `npm test`。
+- 能跑完整回歸時，跑 `pnpm test`。

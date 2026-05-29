@@ -102,12 +102,12 @@ scripts/bootstrap/install-game-globals.module.mjs -> runtime state、DOM refs、
 - 資料先放 `scripts/data/*` 或對應 `.module.mjs` 單一來源，不要把表、數值、素材 key 散塞進 bootstrap。
 - 行為先放 `scripts/systems/*` 或對應 `scripts/bootstrap/install-*-globals.module.mjs`，不要把流程全部堆回單一檔。
 - 如果對應 `.module.mjs` 已存在，新增或調整純資料/純 helper 時要同步考慮 module mirror、legacy `globalThis.Nindou*` bridge、`scripts/main.module.js` probe 與 `tests/*-module.test.js`。
-- 武器資料調整後固定流程：改 `scripts/data/weapons.module.mjs` -> 跑 `npm run sync:weapons` -> 跑 `npm test`。
-- config 規則檔調整後固定流程：改 `scripts/data/config.module.mjs` -> 跑 `npm run sync:config-nindou` -> 跑 `npm test`。
-- ninjutsu-definitions 資料調整後固定流程：改 `scripts/data/ninjutsu-definitions.module.mjs` -> 跑 `npm run sync:ninjutsu-definitions` -> 跑 `npm test`。
-- locales 資料調整後固定流程：改 `scripts/data/locales.module.mjs` -> 跑 `npm run sync:locales` -> 跑 `npm test`。
-- map 資料調整後固定流程：改 `scripts/data/map.module.mjs` -> 跑 `npm run sync:map` -> 跑 `npm test`。
-- rule-modes 資料調整後固定流程：改 `scripts/data/rule-modes.module.mjs` -> 跑 `npm run sync:rule-modes` -> 跑 `npm test`。
+- 武器資料調整後固定流程：改 `scripts/data/weapons.module.mjs` -> 跑 `pnpm sync:weapons` -> 跑 `pnpm test`。
+- config 規則檔調整後固定流程：改 `scripts/data/config.module.mjs` -> 跑 `pnpm sync:config-nindou` -> 跑 `pnpm test`。
+- ninjutsu-definitions 資料調整後固定流程：改 `scripts/data/ninjutsu-definitions.module.mjs` -> 跑 `pnpm sync:ninjutsu-definitions` -> 跑 `pnpm test`。
+- locales 資料調整後固定流程：改 `scripts/data/locales.module.mjs` -> 跑 `pnpm sync:locales` -> 跑 `pnpm test`。
+- map 資料調整後固定流程：改 `scripts/data/map.module.mjs` -> 跑 `pnpm sync:map` -> 跑 `pnpm test`。
+- rule-modes 資料調整後固定流程：改 `scripts/data/rule-modes.module.mjs` -> 跑 `pnpm sync:rule-modes` -> 跑 `pnpm test`。
 - 不要新增依賴 classic `<script>` 載入順序的全新 helper；新 helper 優先寫成可注入依賴、可被 ES module import 測試的形式。
 - 只有直接碰主迴圈與 runtime state 時，才進 `scripts/bootstrap/install-game-globals.module.mjs`；啟動流程、DOM 事件綁定與房間初始化先看 `scripts/bootstrap/install-app-bootstrap-globals.module.mjs`，房間外觀卡、忍術編輯器、商店背包與規則/地圖選單先看 `scripts/bootstrap/install-room-ui-globals.module.mjs`，開局建立角色、起始位置與整局 reset 先看 `scripts/bootstrap/install-battle-setup-globals.module.mjs`，集技、開場倒數、對戰 active 與忍術 dispatch 先看 `scripts/bootstrap/install-battle-runtime-globals.module.mjs`，戰鬥滑鼠輸入、拖曳與戰鬥中點擊判定先看 `scripts/bootstrap/install-battle-input-globals.module.mjs`，開戰/回房、重開長按、模式切換與房間流程協調先看 `scripts/bootstrap/install-game-flow-globals.module.mjs`，戰鬥背景與格子提示先看 `scripts/bootstrap/install-scene-renderer-globals.module.mjs`，狀態訊息與側邊資訊面板先看 `scripts/bootstrap/install-status-ui-globals.module.mjs`，角色本體、分身、血條、名字、眼睛與 buff 外圈先看 `scripts/bootstrap/install-unit-renderer-globals.module.mjs`，地圖物件、武器揮砍、錢鏢射出與近戰攻擊視覺先看 `scripts/bootstrap/install-combat-renderer-globals.module.mjs`，移動殘影、平滑座標、拖曳箭頭與角色移動/施術 sprite helper 先看 `scripts/bootstrap/install-movement-renderer-globals.module.mjs`，忍術/道具特效先看 `scripts/bootstrap/install-effects-renderer-globals.module.mjs`，戰鬥 HUD 先看 `scripts/bootstrap/install-hud-renderer-globals.module.mjs`，倒數/結算覆蓋層先看 `scripts/bootstrap/install-overlay-renderer-globals.module.mjs`。
 - 外觀解析、BGM/音效入口、道具流程、出生格洗牌、隊伍存活數都已拆到 module installer 或 `scripts/systems/*`；改這些功能先找對應檔案。
@@ -376,7 +376,7 @@ weapon8 -> assets/sounds/weapon/8.ogg
 
 ## 18. 測試與 PowerShell
 
-如果 PowerShell 擋住 `npm.ps1`，可用：
+如果 PowerShell 擋住 `pnpm.ps1`，可用：
 
 ```powershell
 Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force

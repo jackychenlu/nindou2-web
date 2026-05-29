@@ -69,7 +69,7 @@
 - `scripts/load-classic-runtime.module.mjs` 保留相容入口，manifest 為空時 `loadMode` 是 `none`、`loadedScriptCount` 是 `0`。
 - 已完成 Vite skeleton、data module mirrors、systems module installers、legacy `globalThis.Nindou*` bridges、同步測試與 browser probe。
 - 所有 probe 應維持 `isSynced: true`。
-- `啟動遊戲.cmd` 是目前雙擊啟動入口，會以自身所在資料夾為工作目錄，必要時先跑 `npm install`，再執行 `npm run dev`。
+- `啟動遊戲.cmd` 是目前雙擊啟動入口，會以自身所在資料夾為工作目錄，必要時先跑 `pnpm install`，再執行 `pnpm dev`。
 - 目前建議不要把所有 `.js` 無差別改名成 `.mjs`；只轉 runtime 仍在用、可測、能減少雙維護的邊界。
 - 若之後要繼續 ES module 化，優先把仍被測試或 bridge 依賴的 classic `.js` 收斂成 generated bridge 或 module import，不要再新增 classic runtime script。
 - 後續 Vite 相關變更請同步更新 `readme/vite-skill.md`，主 handoff 只保留此摘要。
@@ -125,7 +125,7 @@
   - `generate-map-classic.mjs`
   - `generate-rule-modes-classic.mjs`
   - `generate-ninjutsu-definitions-classic.mjs`
-- 新增 `npm run sync:bridges`（`scripts/tools/sync-data-bridges.mjs`）可一次同步五個資料 bridge；建議資料調整後先跑這個，再跑 `npm test` / `npm run build`。
+- 新增 `pnpm sync:bridges`（`scripts/tools/sync-data-bridges.mjs`）可一次同步五個資料 bridge；建議資料調整後先跑這個，再跑 `pnpm test` / `pnpm build`。
 
 ### 2026-05-24 bridge manifest 流程
 
@@ -137,12 +137,12 @@
 
 - `scripts/data/config.js` 的 marker patch（`NINDOU_CONFIG_BRIDGE_START/END`）已併入 `bridge-manifest.mjs`（key: `config-nindou`）。
 - `scripts/tools/generate-config-nindou-bridge.mjs` 改為薄封裝，只呼叫 `runBridgeByKey("config-nindou")`。
-- `npm run sync:bridges` 現在會一起同步 `config-nindou + weapons + ninjutsu-definitions + locales + map + rule-modes`。
+- `pnpm sync:bridges` 現在會一起同步 `config-nindou + weapons + ninjutsu-definitions + locales + map + rule-modes`。
 
 ### 2026-05-25 單一 CLI 同步入口
 
 - 新增 `scripts/tools/sync-bridge.mjs` 作為唯一 CLI 入口，支援 `--key <bridge-key>` 與 `--key all`。
-- `package.json` 的 `sync:*` 全部改走 `sync-bridge.mjs`，保留原 npm 指令名稱但不再依賴多支 wrapper。
+- `package.json` 的 `sync:*` 全部改走 `sync-bridge.mjs`，保留原 pnpm 指令名稱但不再依賴多支 wrapper。
 - 移除 `generate-*.mjs` 與 `sync-data-bridges.mjs`，降低工具腳本分散維護成本。
 
 ### 2026-05-25 config bridge 規格化
@@ -216,7 +216,7 @@
 ### 2026-05-25 Vite 端到端健康檢查
 
 - 新增 `scripts/tools/verify-vite-runtime.mjs`：會自動啟動 `vite preview`、以 Playwright 打開 `index.html`、檢查 `NindouRuntimeBootstrap` 是否 ready、`NindouModuleProbe` 是否 synced，並檢查 page error/console error。
-- `package.json` 新增 `npm run verify:vite`，作為 Vite 過渡期的快速 smoke 檢查入口。
+- `package.json` 新增 `pnpm verify:vite`，作為 Vite 過渡期的快速 smoke 檢查入口。
 
 ### 2026-05-25 classic runtime bundle 載入
 
