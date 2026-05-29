@@ -23,7 +23,7 @@ set "GAME_SERVER=scripts\tools\serve-game.mjs"
 
 powershell -NoProfile -ExecutionPolicy Bypass -Command "try { $r = Invoke-WebRequest -UseBasicParsing -Uri $env:GAME_URL -TimeoutSec 1; if ($r.StatusCode -ge 200) { exit 0 } } catch { exit 1 }"
 if errorlevel 1 (
-  powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process -FilePath '$env:NODE_EXE' -ArgumentList @($env:GAME_SERVER, '--host', '127.0.0.1', '--port', '5174') -WorkingDirectory (Get-Location).Path -WindowStyle Hidden"
+  powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process -FilePath '%NODE_EXE%' -ArgumentList @($env:GAME_SERVER, '--host', '127.0.0.1', '--port', '5174') -WorkingDirectory (Get-Location).Path -WindowStyle Hidden"
   powershell -NoProfile -ExecutionPolicy Bypass -Command "$deadline = (Get-Date).AddSeconds(15); do { try { $r = Invoke-WebRequest -UseBasicParsing -Uri $env:GAME_URL -TimeoutSec 1; if ($r.StatusCode -ge 200) { exit 0 } } catch {}; Start-Sleep -Milliseconds 100 } while ((Get-Date) -lt $deadline); exit 1"
   if errorlevel 1 (
     set "NINDOU_LAUNCH_ERROR=Timed out waiting for the local server."
